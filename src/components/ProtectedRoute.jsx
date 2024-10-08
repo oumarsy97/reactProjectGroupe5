@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'; // Utilisez votre contexte d'a
 
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticated } = useAuth(); // Vérifiez si l'utilisateur est authentifié
-    console.log("auth",isAuthenticated);
+    //console.log("auth",isAuthenticated);
 
     if (!isAuthenticated) {
         return <Navigate to="/" replace />; //dashboard Redirigez vers la page de connexion si non authentifié

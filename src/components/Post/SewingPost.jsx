@@ -1,14 +1,14 @@
 import React from 'react';
 import { Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
 
-const SewingPost = ({ username, timeAgo, content, tags, likes, comments, mediaUrl, mediaType }) => {
+const SewingPost = ({ username, timeAgo, content, tags, likes, comments, mediaUrl,mediaProfil, mediaType, }) => {
     return (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="p-6">
                 <div className="flex items-center">
                     <div className="h-12 w-12 rounded-full bg-gradient-to-r from-rose-400 to-purple-400 p-0.5">
                         <div className="h-full w-full rounded-full bg-white p-0.5">
-                            <img src="/api/placeholder/100/100" alt="Profile" className="rounded-full" />
+                            <img src={mediaProfil} alt="Profile" className="rounded-full" />
                         </div>
                     </div>
                     <div className="ml-4">

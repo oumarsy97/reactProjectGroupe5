@@ -1,4 +1,4 @@
-// components/LoginForm.js
+// components/LoginForm.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 

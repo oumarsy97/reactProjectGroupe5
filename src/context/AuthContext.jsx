@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
                 try {
                     const userData = await fetchUserData();  // Fonction pour récupérer les données utilisateur
                     setUser(userData);
+
                 } catch (error) {
                     console.log('Erreur lors de la récupération des données utilisateur :', error);
                     removeToken(); // Supprimer le token s'il y a une erreur

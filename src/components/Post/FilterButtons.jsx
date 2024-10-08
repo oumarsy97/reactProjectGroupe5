@@ -1,4 +1,3 @@
-import React from 'react';
 
 const FilterButtons = ({ activeFilter, setActiveFilter }) => (
     <div className="flex space-x-4">

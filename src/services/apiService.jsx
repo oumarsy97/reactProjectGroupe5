@@ -1,4 +1,4 @@
-// services/apiService.js
+// services/apiService.jsx
 import axios from 'axios';
 //import {getToken} from "../utils/tokenUtils";
 

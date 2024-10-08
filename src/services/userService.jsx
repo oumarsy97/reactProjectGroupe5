@@ -15,7 +15,13 @@ export const fetchUserData = async () => {
 };
 
 export const createUser = async (userData) => {
-    const response = await axios.post(`${API_BASE_URL}/users`, userData);
+    const config = {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    };
+    const response = await axios.post(`${API_BASE_URL}/users`, userData,config);
+
     return response.data;
 };
 
@@ -36,4 +42,23 @@ export const deleteUser = async (userId) => {
             Authorization: `Bearer ${token}`,
         },
     });
+}
+export  const myfollowers = async () => {
+    const token = getToken();
+    const response = await axios.get(`${API_BASE_URL}/follows/myfollowers`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data.data;
+}
+
+export const fetmyfollowings = async () => {
+    const token = getToken();
+    const response = await axios.get(`${API_BASE_URL}/follows/getMyFollowing/`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return response.data.data;
 }

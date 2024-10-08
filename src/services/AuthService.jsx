@@ -1,4 +1,4 @@
-// src/services/AuthService.js
+// src/services/AuthService.jsx
 import axios from 'axios';
 import { setToken, getToken, removeToken } from '../utils/tokenUtils';
 

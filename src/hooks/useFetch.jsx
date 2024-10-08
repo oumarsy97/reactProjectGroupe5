@@ -1,4 +1,4 @@
-// hooks/useFetch.js
+// hooks/useFetch.jsx
 import { useEffect, useState } from 'react';
 
 export const useFetch = (apiCall) => {

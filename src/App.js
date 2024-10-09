@@ -5,6 +5,7 @@ import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import UserProfile from "./components/UserProfile/UserProfil";
 import SewingNetwork from "./components/Accueil";
+import UserList from "./components/user/UserTest";
 //import UserProfile from "./components/UserProfile";
 
 function App() {
@@ -12,10 +13,11 @@ function App() {
     return (
         <AuthProvider>
             <Router>
+
                 <Routes>
                     <Route path="/" element={
 
-                        <Login />
+                        <UserList />
 
                     } /> {/* Redirection vers la page de connexion */}
 

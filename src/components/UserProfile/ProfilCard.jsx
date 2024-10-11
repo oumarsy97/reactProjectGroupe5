@@ -1,64 +1,54 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';  // Assure-toi que le chemin est correct
-import { fetActorByUserId } from '../../services/ActorService';  // Fonction pour récupérer les infos de l'acteur
-import { LocationMarkerIcon, CreditCardIcon } from '@heroicons/react/solid';  // Import des icônes
+import React from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { useActor } from "../../context/ActorContext";
+import { MapPin, CreditCard, User } from 'lucide-react';
 
 const ProfileCard = () => {
-    const { user } = useAuth();  // Récupérer les données de l'utilisateur connecté
-    const [actor, setActor] = useState(null); // État pour stocker les données de l'acteur
+    const { user } = useAuth();
+    const { actor } = useActor();
 
-    useEffect(() => {
-        // Vérifie si l'utilisateur est connecté et s'il n'est pas un client
-        if (user && user.role !== 'USER') {
-            const fetchActorData = async () => {
-                try {
-                    const actorData = await fetActorByUserId(user.id); // Récupérer les données de l'acteur via l'ID utilisateur
-                    setActor(actorData); // Mettre à jour l'état avec les données de l'acteur
-                } catch (error) {
-                    console.error('Erreur lors de la récupération des données de l\'acteur :', error);
-                }
-            };
-            fetchActorData();
-        }
-    }, [user]);
-
-    if (!user) return null;  // Si l'utilisateur n'est pas connecté, renvoyer null
+    if (!user) return null;
 
     return (
-        <div className="text-center mb-6">
-            {/* Photo de profil */}
-            <div className="h-20 w-20 mx-auto rounded-full bg-gradient-to-r from-rose-400 to-purple-400 p-1">
-                <div className="h-full w-full rounded-full bg-white p-0.5">
+        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-violet-300 to-gray-200 p-4">
+                <div className="relative mx-auto h-24 w-24 rounded-full border-4 border-white shadow-lg">
                     <img
-                        src={user?.photo || "/api/placeholder/100/100"}  // Afficher la photo de profil ou un placeholder par défaut
+                        src={user?.photo || "/api/placeholder/100/100"}
                         alt="Profile"
-                        className="rounded-full object-cover w-full h-full"  // Assurer que l'image s'adapte bien dans le cercle
+                        className="rounded-full object-cover w-full h-full"
                     />
+                    {user.role !== 'USER' && (
+                        <span className="absolute bottom-0 right-0 block h-6 w-6 rounded-full bg-green-400 border-2 border-white" title="En ligne"></span>
+                    )}
                 </div>
             </div>
 
-            {/* Nom de l'utilisateur */}
-            <h2 className="mt-4 font-serif text-xl">{user?.firstname} {user?.lastname}</h2>
+            <div className="p-4">
+                <h2 className="text-2xl font-semibold text-center text-gray-800">{user?.firstname} {user?.lastname}</h2>
+                <p className="text-violet-600 text-center mt-1">{user.role}</p>
 
-            {/* Afficher les informations supplémentaires si l'utilisateur n'est pas un client */}
-            {user.role !== 'USER' && actor && (
-                <div className="mt-3 space-y-2">
-                    {/* Adresse */}
-                    <p className="text-gray-600 text-xl flex items-center">
-                        <LocationMarkerIcon className="w-5 h-5 mr-2" />
-                        Adresse: {actor.address || 'Pas d\'adresse'}
-                    </p>
+                {user.role !== 'USER' && actor && (
+                    <div className="mt-4 space-y-3">
+                        <div className="flex items-center text-gray-600">
+                            <MapPin className="w-5 h-5 mr-2 text-violet-500" />
+                            <span>{actor.address || 'Pas d\'adresse'}</span>
+                        </div>
 
-                    {/* Crédits restants */}
-                    <p className="text-gray-600 text-xl flex items-center">
-                        <CreditCardIcon className="w-5 h-5 mr-2" />
-                        Crédits restant: {actor.credits || 0}
-                    </p>
+                        <div className="flex items-center text-gray-600">
+                            <CreditCard className="w-5 h-5 mr-2 text-violet-500" />
+                            <span>Crédits restants: {actor.credits || 0}</span>
+                        </div>
 
-                    {/* Bio */}
-                    <p className="text-gray-600 text-xl flex items-center">Bio: {actor.bio || 'Pas de bio disponible'}</p>
-                </div>
-            )}
+                        <div className="flex items-start text-gray-600">
+                            <User className="w-5 h-5 mr-2 text-violet-500 mt-1" />
+                            <p className="flex-1">{actor.bio || 'Pas de bio disponible'}</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+
         </div>
     );
 };

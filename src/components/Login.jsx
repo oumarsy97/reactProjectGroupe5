@@ -1,56 +1,61 @@
-import React, { useState } from 'react';
+
+
+import React, { useState, useEffect } from 'react';
 import AuthService from '../services/AuthService';
-import { fetchUserData } from '../services/userService';
 import { useAuth } from '../context/AuthContext';
+import { useActor } from '../context/ActorContext';
 import { useNavigate } from 'react-router-dom';
 import Signup from './user/Signup';
-import Swal from 'sweetalert2';
+import { useToken } from '../context/TokenContext';
+import useCrud from '../hooks/useCrudAxios';
 import AlertService from "../services/notifications/AlertService";
-import {getToken} from "../utils/tokenUtils";
 
 const Login = () => {
-    const { login: setUser } = useAuth();
+    const { login: setUser, logout: clearUser } = useAuth();
+    const { setToken, getToken, clearToken } = useToken();
+    const { login: setActor, logout: clearActor } = useActor();
     const navigate = useNavigate();
-    if(getToken()){
-
-       navigate('/home');
-    }
-
     const [isLoginMode, setIsLoginMode] = useState(true);
     const [credentials, setCredentials] = useState({ email: '', password: '' });
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    const showSuccessAlert = () => {
-        Swal.fire({
-            title: 'Connexion réussie!',
-            text: 'Vous allez être redirigé...',
-            icon: 'success',
-            timer: 2000,
-            showConfirmButton: false,
-            background: '#fff',
-            customClass: {
-                popup: 'rounded-xl',
-                title: 'text-xl font-bold text-gray-900',
-                text: 'text-gray-600'
-            }
-        });
-    };
-    const showErrorAlert = () => {
-        Swal.fire({
-            title: 'Erreur de connexion',
-            text: 'Vérifiez votre login et mot de passe',
-            icon: 'error',
-            timer: 2000,
-            showConfirmButton: false,
-            background: '#fff',
-            customClass: {
-                popup: 'rounded-xl',
-                title: 'text-xl font-bold text-gray-900',
-                text: 'text-gray-600'
-            }
-        });
+    const { get: getUserProfile } = useCrud('users/monprofile');
+    const { get: getActorProfile } = useCrud('actors/monprofile');
+    if(isAuthenticated){
+        navigate("/")
     }
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const token = getToken();
+            if (token && !isAuthenticated) {
+                try {
+                    await loadUserData(token);
+                    navigate('/');
+                    setIsAuthenticated(true);
+                } catch (err) {
+                    handleLogout();
+                }
+            }
+        };
+        checkAuth();
+        // eslint-disable-next-line no-use-before-define
+    }, [getToken]);
+
+    const loadUserData = async (token) => {
+        try {
+            const user = await getUserProfile();
+            setUser(user);
+            if (user.role !== 'USER') {
+                const actor = await getActorProfile();
+                setActor(actor);
+            }
+        } catch (error) {
+            throw new Error('Failed to load user data');
+        }
+    };
 
     const handleSubmit = async () => {
         setLoading(true);
@@ -58,27 +63,32 @@ const Login = () => {
 
         try {
             if (isLoginMode) {
-                await AuthService.login(credentials.email, credentials.password);
-                const userData = await fetchUserData();
-                setUser(userData);
-                await AlertService.success("connexion successful");
+                const data = await AuthService.login(credentials.email, credentials.password);
+                setToken(data.token);
+                await loadUserData(data.token);
+                setIsAuthenticated(true);
                 navigate('/home');
+                AlertService.success("Connexion réussie");
             } else {
-                // Logique d'inscription si nécessaire
+                // Logique d'inscription (le composant Signup prend en charge cela)
             }
         } catch (err) {
-            if (err.response && err.response.status === 401) {
-                await showErrorAlert()
-                setError("Login ou mot de passe incorrect");
-            } else {
-                setError("Une erreur est survenue. Veuillez réessayer.");
-            }
+            setError("Une erreur est survenue. Veuillez réessayer.");
         } finally {
             setLoading(false);
         }
+    };
 
+    const handleLogout = () => {
+        clearToken();
+        clearUser();
+        clearActor();
+        setIsAuthenticated(false);
+        navigate('/login');
+        AlertService.success("Déconnexion réussie");
+    };
+    // ... le reste de votre composant (rendu, gestion des inputs, etc.)
 
-};
 
     return (
         <div

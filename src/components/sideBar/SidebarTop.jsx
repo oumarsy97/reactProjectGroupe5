@@ -1,12 +1,28 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import FilterButtons from "../Post/FilterButtons";
 
-const SidebarTop = ({ activeFilter, setActiveFilter }) => (
-    <div className="col-span-3">
-        <div className="sticky top-24 space-y-4">
-            <FilterButtons activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
+const SidebarTop = ({ activeFilter, setActiveFilter, className, sticky = true }) => {
+    const stickyClass = sticky ? 'sticky top-24' : '';
+
+    return (
+        <div className={`col-span-3 ${className}`}>
+            <div className={`${stickyClass} space-y-4`}>
+                <FilterButtons
+                    activeFilter={activeFilter}
+                    setActiveFilter={setActiveFilter}
+                />
+                {/* Espace pour du contenu supplémentaire */}
+            </div>
         </div>
-    </div>
-);
+    );
+};
+
+SidebarTop.propTypes = {
+    activeFilter: PropTypes.string.isRequired,
+    setActiveFilter: PropTypes.func.isRequired,
+    className: PropTypes.string,
+    sticky: PropTypes.bool
+};
 
 export default SidebarTop;

@@ -1,9 +1,25 @@
-export const getToken = () => localStorage.getItem('token');
+import { useToken } from '../context/TokenContext';
 
-export const setToken = (token) => localStorage.setItem('token', token);
+ export  const useTokenService = () => {
+    const { token, setToken } = useToken();
 
-export const removeToken = () => localStorage.removeItem('token');
-export const  getTimeDifference = (dateString) => {
+    const getToken = () => {
+        return token; // Récupérer le token du contexte
+    };
+
+    const setNewToken = (newToken) => {
+        setToken(newToken); // Mettre à jour le token dans le contexte
+    };
+
+    const removeToken = () => {
+        setToken(null); // Réinitialiser le token dans le contexte
+    };
+
+    return { getToken, setNewToken, removeToken };
+};
+
+// Utiliser cette fonction pour gérer le token
+export const getTimeDifference = (dateString) => {
     // Convertir la chaîne de caractères en objet Date
     const givenDate = new Date(dateString);
 
@@ -27,5 +43,3 @@ export const  getTimeDifference = (dateString) => {
         return `${differenceInDays} jour(s)`;
     }
 };
-
-

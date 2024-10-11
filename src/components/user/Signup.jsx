@@ -1,17 +1,11 @@
 import React, { useState } from 'react';
-import {createUser, fetchUserData} from '../../services/userService';
-import { createActor } from '../../services/ActorService';
-import { useNavigate } from 'react-router-dom';
 import { Camera } from 'lucide-react';
 import Login from '../Login';
 import AlertService from "../../services/notifications/AlertService";
-import {setToken} from "../../utils/tokenUtils";
-import {useAuth} from "../../context/AuthContext";
+import useCrud from "../../hooks/useCrudAxios";
 
 const Signup = () => {
-    const navigate = useNavigate();
     const [isLoginMode, setIsLoginMode] = useState(false);
-    const { login: setUser } = useAuth();
     const [formData, setFormData] = useState({
         firstname: '',
         lastname: '',
@@ -27,6 +21,8 @@ const Signup = () => {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [photoPreview, setPhotoPreview] = useState(null);
+    const { create: createUser } = useCrud('users');
+    const { create: createActor } = useCrud('actors/create');
 
     const handleInputChange = (e) => {
         const { name, value, type, files } = e.target;
@@ -37,6 +33,7 @@ const Signup = () => {
             setFormData({ ...formData, [name]: value });
         }
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -58,16 +55,18 @@ const Signup = () => {
         try {
             let data ;
             if (formData.role === 'CLIENT') {
-                data = await createUser(formPayload);  // Send as FormData
+             //   data = await createUser(formPayload);  // Send as FormData
+               data = await createUser(formPayload, true);
+               console.log(data);
+
             } else {
-             data = await createActor(formPayload);
+           //  data = await createActor(formPayload);
+                data = await createActor(formPayload, true);
 
             }
-            setToken(data.token);
-            const userData = await fetchUserData();
-            setUser(userData);
+           // setToken(data.token);
             await AlertService.success('Inscription réussie!');
-            navigate('/home');
+           // navigate('/home');
            // navigate('/home');
         } catch (err) {
             await AlertService.error(err.message);

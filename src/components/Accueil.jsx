@@ -1,77 +1,75 @@
-import React, {useEffect, useState} from 'react';
+import React, { useState, useCallback } from 'react';
+import { useQuery } from 'react-query';
 import Navbar from "./UserProfile/Navbar";
 import SidebarLeft from "./sideBar/SidebarLeft";
 import SewingPost from "./Post/SewingPost";
 import SidebarTop from "./sideBar/SidebarTop";
 import SidebarRight from "./sideBar/SidebarRight";
-import {fetchOthersPosts} from "../services/PostService";
-import {getTimeDifference} from "../utils/tokenUtils";
+import { getTimeDifference } from "../utils/tokenUtils";
+import useCrud from "../hooks/useCrudAxios";
+import {useToken} from "../context/TokenContext";
+import  {useActor} from "../context/ActorContext";
+
 const SewingNetwork = () => {
-    const [activeFilter, setActiveFilter] = useState('tendances');
-    const [posts, setPosts] = useState([]);
+    const { getToken } = useToken();
+    const {actor} = useActor();    const [activeFilter, setActiveFilter] = useState('tous');
+    const crudPosts = useCrud('posts/others')
+    const crudPostsAll = useCrud('posts');
 
-    useEffect(() => {
-        const getPosts = async () => {
-            try {
-                const data = await fetchOthersPosts();
-                const shuffledPosts = [...data].sort(() => Math.random() - 0.5);
-                // Vous pouvez filtrer les posts ici en fonction de activeFilter si nécessaire
-                const filteredPosts = shuffledPosts.filter(post => {
-                    // Logique de filtrage selon activeFilter
-                    return true; // À modifier selon vos besoins
-                });
-                console.log('Posts mélangés et filtrés :', filteredPosts);
-                setPosts(filteredPosts);
-            } catch (error) {
-                console.error('Erreur lors de la récupération des posts :', error);
+    const crudProduits = useCrud('produits/others');
+    const crudProduitsAll = useCrud('produits');
+
+
+
+
+
+
+    const { data: posts, isLoading, isError } = useQuery('posts', () => crudPosts.get(), {
+        staleTime: 60000, // 1 minute
+        refetchOnWindowFocus: false,
+    });
+
+    const shuffleAndFilterPosts = useCallback((posts) => {
+        console.log( posts)
+        if (!posts) return [];
+        const shuffledPosts = [...posts].sort(() => Math.random() - 0.5);
+        return shuffledPosts.filter(post => {
+            switch(activeFilter) {
+                case 'tendances':
+                    return post.likes.length > 10;
+                case 'recent':
+                    const postDate = new Date(post.createdAt);
+                    const now = new Date();
+                    const diffHours = (now - postDate) / (1000 * 60 * 60);
+                    return diffHours < 24;
+                default:
+                    return true;
             }
-        };
-        getPosts();
-    }, [activeFilter]); // L'effet s'exécutera à chaque changement de activeFilter
+        });
+    }, [activeFilter]);
 
+    const filteredPosts = shuffleAndFilterPosts(posts);
 
-
-
- return (
+    return (
         <div className="min-h-screen bg-gray-100">
-            <Navbar/>
+            <Navbar />
             <div className="grid grid-cols-12 gap-12 pt-24 max-w-7xl mx-auto px-4">
-
-
                 <SidebarLeft />
-
-
                 <div className="col-span-6 space-y-6">
                     <SidebarTop activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
-                    {/* Posts go here */}
-                    {posts.map(post => (
-
-                    <SewingPost
-
-                        username={post.user.user.firstname+' '+  post.user.user.lastname }
-                        timeAgo={"Il y a "+getTimeDifference(post.createdAt)}
-                        content={post.description}
-                        tags={['robe', 'vintage', 'couture']}
-                        likes={post.likes.length}
-                        comments={post.comments.length}
-                        mediaUrl={post.photo}
-                        mediaType="image"
-                        mediaProfil={post.user.user.photo}
-                    />
-                        ))}
-
-
-
-
-
-
-
-
-
-
-
+                    {isLoading ? (
+                        <p>Chargement des posts...</p>
+                    ) : isError ? (
+                        <p>Une erreur est survenue lors du chargement des posts.</p>
+                    ) : (
+                        filteredPosts.map(post => (
+                            <SewingPost
+                               post={post}
+                            />
+                        ))
+                    )}
                 </div>
-               <SidebarRight />
+                <SidebarRight />
             </div>
         </div>
     );

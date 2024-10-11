@@ -1,70 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { Layout, Users, Star } from 'lucide-react';
+import React from 'react';
+import { Users, Scissors, Eye,ShoppingBag } from 'lucide-react';
 import ProfileCard from "../UserProfile/ProfilCard";
-import StatsCard from "../UserProfile/StatsCard";
-import { fetchmyposts } from "../../services/PostService";
 import { useAuth } from '../../context/AuthContext';
+import { useActor } from "../../context/ActorContext";
 import { useNavigate } from 'react-router-dom';
-import {fetmyfollowings, myfollowers} from "../../services/userService";  // Importer le contexte d'authentification
+
+const StatsCard = ({ icon: Icon, title, value }) => (
+    <div className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-violet-50 transition-colors duration-300">
+        <div className="mr-4 bg-violet-100 p-2 rounded-full">
+            <Icon className="w-5 h-5 text-violet-600" />
+        </div>
+        <div>
+            <p className="text-sm font-medium text-gray-500">{title}</p>
+            <p className="text-lg font-semibold text-gray-800">{value}</p>
+        </div>
+    </div>
+);
 
 const SidebarLeft = () => {
-    const { user } = useAuth();  // Récupérer les infos de l'utilisateur connecté
-    const [posts, setPosts] = useState([]);
+    const { user } = useAuth();
+    const { actor } = useActor();
     const navigate = useNavigate();
-    const [followers, setFollowers] = useState([]);
-    const [fetFollowingsData, setFetFollowingsData] = useState([]);
-
-    useEffect(() => {
-        const fetchMypost = async () => {
-            try {
-                const postData = await fetchmyposts();
-                setPosts(postData);
-            } catch (error) {
-                console.error('Erreur lors de la récupération des posts de l\'acteur :', error);
-            }
-        };
-        const fetchFollowers = async () => {
-            try {
-                const followersData = await myfollowers();
-                setFollowers(followersData);
-            } catch (error) {
-                console.error('Erreur lors de la récupération des followers :', error);
-            }
-        }
-        const fetmyFollowings = async () => {
-            try {
-                const fetFollowingsData = await fetmyfollowings();
-                console.log(fetFollowingsData);
-                setFetFollowingsData(fetFollowingsData);
-            } catch (error) {
-                console.error('Erreur lors de la récupération des followers :', error);
-            }
-        }
-        if (user?.role === 'TAILOR') {  // Ne récupérer les posts que si le rôle est TAILOR
-            fetchMypost();
-        }
-        if (user?.role === 'TAILOR' || user?.role === 'VENDOR') {  // Ne récupérer les posts que si le rôle est TAILOR
-            fetchFollowers();
-        }
-        fetmyFollowings();
-    }, [user]);
 
     return (
-        <div className="col-span-3 ">
-            <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-                <ProfileCard name="Marie Couture" specialty="Créatrice Passionnée" />
-                <div className="space-y-4">
-                    <StatsCard icon={<Users />} title="Abonnés" value={followers.length} />
-                    <StatsCard icon={<Users />} title="suivi(e)s" value={fetFollowingsData.length} />
-
-                    {/* Afficher les réalisations uniquement si l'utilisateur est un TAILOR */}
+        <div className="col-span-3">
+            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24 border border-gray-200">
+                <ProfileCard />
+                <div className="mt-6 space-y-4">
+                    <StatsCard icon={Users} title="Abonnés" value={actor?.follow?.length || 0} />
+                    <StatsCard icon={Eye} title="Suivi(e)s" value={actor?.following?.length || 0} />
                     {user?.role === 'TAILOR' && (
-                        <StatsCard icon={<Layout />} title="Mes Créations" value={posts.length || "0"} />
+                        <StatsCard icon={Scissors} title="Mes Créations" value={actor?.posts?.length || 0} />
+                    )}
+
+                    {user?.role === 'VENDOR' && (
+                        <StatsCard
+                            icon={ShoppingBag}
+                            title="Mes Produits"
+                            value={actor?.produits?.length || 0}
+                        />
                     )}
                 </div>
-                <button className="w-full mt-6 bg-gradient-to-r mb-3 from-rose-400 to-purple-400 text-white py-2 px-4 rounded-full" onClick={()=>{ navigate("/profile")}}>
+                <button
+                    className="w-full mt-6 bg-gradient-to-r from-violet-400 to-purple-500 text-white py-3 px-4 rounded-lg font-semibold shadow-md hover:from-violet-500 hover:to-purple-600 transition-all duration-300 transform hover:scale-105"
+                    onClick={() => navigate("/profile")}
+                >
                     Voir mon profil
                 </button>
+
             </div>
         </div>
     );

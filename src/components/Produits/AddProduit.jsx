@@ -1,226 +1,240 @@
 import React, { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { X, ImagePlus, Tag, Sparkles, Plus, Maximize } from 'lucide-react';
+import useCrud from "../../hooks/useCrudAxios";
+import AlertService from "../../services/notifications/AlertService";
+import { useActor } from "../../context/ActorContext";
 
-const Header = () => (
-    <header className="bg-purple-600 p-4 flex justify-between items-center">
-        <div className="flex items-center">
-            <svg className="w-8 h-8 text-white mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 6H4V18H20V6Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M4 10H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <h1 className="text-white text-xl font-semibold">Mon Réseau Social</h1>
-        </div>
-        <div className="flex items-center">
-            <input
-                type="search"
-                placeholder="Rechercher"
-                className="px-4 py-2 rounded-full mr-4"
-            />
-            <button className="text-white mr-4">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                </svg>
-            </button>
-            <button className="text-white mr-4">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-                </svg>
-            </button>
-            <img src="/api/placeholder/40/40" alt="Profile" className="w-10 h-10 rounded-full" />
-        </div>
-    </header>
-);
-
-const OrderItem = ({ id, image, quantity, price, onQuantityChange, onclick }) => {
-    return (
-        <tr className="border-b">
-            <td className="p-2">
-                <img src={image} alt="Product" className="w-12 h-12 object-cover" />
-            </td>
-            <td className="p-2">
-                <div className="flex items-center">
-                    <button className="px-2 py-1 bg-gray-200 rounded-l" onClick={() => onQuantityChange(-1)}>-</button>
-                    <span className="px-4 py-1 bg-gray-100">{quantity}</span>
-                    <button className="px-2 py-1 bg-gray-200 rounded-r" onClick={() => onQuantityChange(1)}>+</button>
-                </div>
-            </td>
-            <td className="p-2">{price * quantity}</td>
-            <td className="p-2">
-                <button onClick={onclick} className="bg-red-500 text-white rounded p-1">
-                    <Trash2 size={16} />
-                </button>
-            </td>
-        </tr>
-    );
+const SIZE = {
+    XS: 'XS',
+    S: 'S',
+    M: 'M',
+    L: 'L',
+    XL: 'XL'
 };
+const MAX_IMAGE_SIZE = 1024 * 1024; // 1MB
 
-const OrderSummary = ({ items, client, onQuantityChange, onclick }) => {
-    const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+export default function AddProduitModal() {
+    const [isOpen, setIsOpen] = useState(false);
+    const [image, setImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const { create: createPost } = useCrud('produits');
+    const [formData, setFormData] = useState({
+        libelle: '',
+        description: '',
+        qte: '1',
+        price: '1',
+    });
+    const { actor, setActor } = useActor();
+    const [isLoading, setIsLoading] = useState(false);
 
-    return (
-        <div className="bg-purple-400 flex flex-col space-y-0 rounded-lg shadow">
-            <table className="bg-white p-4 w-full mt-2 text-center font-semibold rounded-t-lg">
-                <thead className="bg-purple-400">
-                <tr>
-                    <th className="p-2">Produits</th>
-                    <th className="p-2">Quantité</th>
-                    <th className="p-2">Prix</th>
-                    <th className="p-2"> - </th>
-                </tr>
-                </thead>
-                <tbody>
-                {items.map((item, index) => (
-                    <OrderItem key={index} {...item} onQuantityChange={(change) => onQuantityChange(index, change)} onclick={onclick} />
-                ))}
-                </tbody>
-            </table>
-            <div className="bg-white mt-4 p-4 rounded-b-lg flex justify-between font-semibold">
-                <span>Total :</span>
-                <span>{total}</span>
-            </div>
-        </div>
-    );
-};
-
-const InfosCommande = (client) => {
-    return (
-        <div className="bg-purple-400 w-1/3 h-1/2 flex flex-col space-y-0 rounded-lg shadow">
-            <table className="w-full p-4 bg-white mt-2 text-center">
-                <thead className="bg-purple-400 ">
-                <tr>
-                    <th className="text-left p-2"><h3 className="font-semibold">Client</h3></th>
-                    <th className="text-left p-2"><h3 className="font-semibold">Email</h3></th>
-                    <th className="p-1"><h3 className="font-semibold">Discuter</h3></th>
-                </tr>
-                </thead>
-                <tbody className="border-t pt-4">
-                <tr>
-                    <td className="flex items-center p-2">
-                        <img src={client.image} alt={client.name} className="w-10 h-10 rounded-full mr-2" />
-                        <span>{client.name}</span>
-                    </td>
-                    <td className="p-2">{client.email}</td>
-                    <td className="p-2">
-                        <button className="px-2 py-1 bg-blue-500 text-white rounded">Chat</button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-            <div className="mt-4 flex justify-between rounded-b-lg p-4 bg-white">
-                <button className="px-4 py-2 bg-purple-600 text-white rounded">Valider</button>
-                <button className="px-4 py-2 bg-red-600 text-white rounded">Annuler</button>
-            </div>
-        </div>
-    );
-};
-
-const CommandeDetails = () => {
-    const [email, setEmail] = useState('');
-    const [orderId, setOrderId] = useState(null);
-    const [orders, setOrders] = useState([]);
-
-    const [clientName, setClientName] = useState('Fatima');
-    const removeProduct = (productId) => {
-        setOrders(orders.filter(p => p.id !== productId));
-    }
-    const handleSearch = () => {
-        const foundOrder = orders.find(order => order.email === email && order.status === 'pending');
-        if (foundOrder) {
-            setOrderId(foundOrder.id);
+    const handleInputChange = (e) => {
+        const { name, value, type, files } = e.target;
+        if (type === 'file') {
+            setImage(files[0]);
+            setImagePreview(URL.createObjectURL(files[0]));
         } else {
-            alert('Aucune commande en attente trouvée pour cet email.');
+            setFormData({ ...formData, [name]: value });
         }
     };
 
-    const handleToThisOrder = () => {
-        const newOrder = {
-            id: orders.length + 1,
-            email,
-            clientName,
-            products: [
-                { image: "/api/placeholder/48/48", quantity: 2, price: 2000 },
-                { image: "/api/placeholder/48/48", quantity: 2, price: 2000 },
-                { image: "/api/placeholder/48/48", quantity: 2, price: 2000 },
-            ],
-            status: 'pending',
-        };
-        setOrders([...orders, newOrder]);
-        setOrderId(newOrder.id);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!formData.libelle || !formData.description || !formData.qte || !formData.price || !image) {
+            await AlertService.error('Tous les champs sont obligatoires');
+            return;
+        }
+        if (actor.credits < 10) {
+            await AlertService.error('Votre crédit est insuffisant');
+            return;
+        }
+        setIsLoading(true);
+        try {
+            console.log(formData);
+            const formPayload = new FormData();
+            Object.keys(formData).forEach(key => formPayload.append(key, formData[key]));
+            formPayload.append('photo', image);
+
+
+            const data = await createPost(formPayload);
+            setActor({ ...actor, credits: actor.credits - 10, produits: [...actor.produits, data] });
+            AlertService.success('Produit ajouter avec success');
+            setIsOpen(false);
+            resetForm();
+        } catch (error) {
+            await AlertService.error('Erreur lors de l ajoute du produit');
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleQuantityChange = (index, change) => {
-        const updatedOrders = orders.map(order => {
-            if (order.id === orderId) {
-                const updatedProducts = order.products.map((product, i) => {
-                    if (i === index) {
-                        return { ...product, quantity: product.quantity + change };
-                    }
-                    return product;
-                });
-                return { ...order, products: updatedProducts };
-            }
-            return order;
+    const resetForm = () => {
+        setFormData({
+            libelle: '',
+            description: '',
+            qte: '',
+            price: '1',
         });
-        setOrders(updatedOrders);
+        setImage(null);
+        setImagePreview(null);
     };
 
-    const client = {
-        name: clientName,
-        image: "/api/placeholder/40/40",
-    };
-
+    if (!isOpen) {
+        return (
+            <button
+                onClick={() => setIsOpen(true)}
+                className="flex flex-col items-center gap-0.5 hover:text-red-500"
+            >
+                <Plus className="w-6 h-6" />
+                Ajouter produit
+            </button>
+        );
+    }
     return (
-        <div className="min-h-screen bg-gray-100">
-            <Header />
-            <main className="container mx-auto mt-8 p-4">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-semibold">Commandes</h2>
-                    <div className="flex">
-                        <button className="mr-2">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </button>
-                        <button onClick={handleToThisOrder}>
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div className="mb-4">
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Rechercher par email"
-                        className="border p-2 rounded w-full"
-                    />
-                    <button onClick={handleSearch} className="bg-purple-600 text-white px-4 py-2 rounded mt-2 hover:bg-purple-700">
-                        Rechercher
-                    </button>
-                    <br />
-
-                    <button onClick={handleToThisOrder} className="bg-purple-600 text-white px-4 py-2 rounded mt-2 hover:bg-purple-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </button>
-                </div>
-                {orderId && (
-                    <div className='flex justify-around'>
-                        <OrderSummary
-                            items={orders.find(order => order.id === orderId).products}
-                            client={client}
-                            onQuantityChange={handleQuantityChange}
-                            onclick={removeProduct}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-5xl flex">
+                {/* Image section */}
+                <div className="w-1/3 p-6 flex items-center justify-center">
+                    <div className="relative w-full h-full">
+                        <input
+                            type="file"
+                            id="image"
+                            onChange={handleInputChange}
+                            className="hidden"
+                            accept="image/*"
+                            name="image"
                         />
-                        <InfosCommande client={client} />
+                        <div
+                            className="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden"
+                            onClick={() => !imagePreview && document.getElementById('image').click()}
+                        >
+                            {imagePreview ? (
+                                <img
+                                    src={imagePreview}
+                                    alt="Preview"
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="text-center">
+                                    <ImagePlus className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                                    <p className="text-sm font-medium text-gray-500">
+                                        Ajouter une image
+                                    </p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        Glissez une image ou cliquez pour en sélectionner une
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                        {imagePreview && (
+                            <button
+                                onClick={() => {
+                                    setImage(null);
+                                    setImagePreview(null);
+                                }}
+                                className="absolute bottom-4 right-4 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors duration-300 shadow-lg"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
-                )}
-            </main>
+                </div>
+
+                {/* Form section */}
+                <div className="w-2/3 p-6">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                        Ajouter Produit
+                    </h2>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label htmlFor="libelle" className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                                Libelle
+                            </label>
+                            <input
+                                id="libelle"
+                                name="libelle"
+                                value={formData.libelle}
+                                onChange={handleInputChange}
+                                className="mt-2 w-full border-2 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 bg-gray-50 dark:bg-gray-800"
+                                placeholder="Un libelle captivant..."
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="description" className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                                Description
+                            </label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                value={formData.description}
+                                onChange={handleInputChange}
+                                className="mt-2 h-24 w-full border-2 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 bg-gray-50 dark:bg-gray-800"
+                                placeholder="Partagez votre histoire..."
+                                required
+                            />
+                        </div>
+
+                        <div className="flex gap-4">
+                            <div className="w-1/2">
+                                <label htmlFor="qte" className="text-lg font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                    <Sparkles className="w-5 h-5 text-blue-500" />
+                                    Quantité
+                                </label>
+                                <input
+                                    id="qte"
+                                    name="qte"
+                                    value={formData.qte}
+                                    onChange={handleInputChange}
+                                    type="number"
+                                    className="mt-2 w-full border-2 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 bg-gray-50 dark:bg-gray-800"
+                                   min="1"
+
+                                    required
+                                />
+                            </div>
+                            <div className="w-1/2">
+                                <label htmlFor="price" className="text-lg font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                    <Maximize className="w-5 h-5 text-blue-500" />
+                                    Prix Unitaire
+                                </label>
+                                <input
+                                    id="price"
+                                    name="price"
+                                    type="number"
+                                    value={formData.price}
+                                    onChange={handleInputChange}
+                                    className="mt-2 w-full border-2 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 bg-gray-50 dark:bg-gray-800"
+                                    required
+                                />
+
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-6">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    resetForm();
+                                }}
+                                className="px-6 py-2 rounded-xl border border-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300"
+                            >
+                                Annuler
+                            </button>
+
+                            <button
+                                type="submit"
+                                className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 hover:from-blue-700 hover:via-purple-700 hover:to-pink-600 text-white px-6 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Publication en cours...' : 'Publier'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     );
-};
-
-export default CommandeDetails;
+}

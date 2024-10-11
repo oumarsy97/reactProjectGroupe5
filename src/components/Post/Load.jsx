@@ -1,69 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
-const BlinkingLamp = ({ x, y, size, hue }) => (
-  <div 
-    className="absolute rounded-full animate-synchronized-blink"
-    style={{
-      left: `${x}%`,
-      top: `${y}%`,
-      width: `${size}px`,
-      height: `${size}px`,
-      backgroundColor: `hsl(${hue}, 100%, 50%)`,
-      boxShadow: `0 0 ${size/2}px ${size/4}px hsl(${hue}, 100%, 50%)`
-    }}
-  />
-);
-
-const AnimatedBackground = () => {
-  const lamps = Array.from({ length: 50 }, (_, i) => ({
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 20 + 10,
-    hue: Math.random() * 60 + 280,
-  }));
-
-  return (
-    <div className="absolute inset-0 overflow-hidden bg-gray-800">
-      {lamps.map((lamp, index) => (
-        <BlinkingLamp key={index} {...lamp} />
-      ))}
-    </div>
-  );
-};
-
-const LoadingSpinner = ({ isVisible }) => (
-  <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-    <div className="w-20 h-20 border-4 border-blue-800 border-t-transparent rounded-full animate-spin"></div>
-  </div>
-);
-
-const DemoWithLoading = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [showSpinner, setShowSpinner] = useState(false);
-
-  useEffect(() => {
-    const spinnerTimer = setTimeout(() => setShowSpinner(true), 500);
-    const loadingTimer = setTimeout(() => {
-      setIsLoading(false);
-    }, 30000); // 30 seconds to simulate loading
-    
-    return () => {
-      clearTimeout(spinnerTimer);
-      clearTimeout(loadingTimer);
-    };
-  }, []);
-
-  return (
-    <div className="relative h-screen w-full flex items-center justify-center bg-gray-800 text-white">
-      <AnimatedBackground />
-      <LoadingSpinner isVisible={showSpinner && isLoading} />
-      {!isLoading && (
-        <div className="relative z-10 text-3xl font-bold animate-fade-in">
-          Content Loaded!
+const FlexibleLoadingSpinner = ({ duration = 1.5 }) => {
+    return (
+        <div className="flex justify-center items-center h-screen w-screen fixed top-0 left-0 bg-black bg-opacity-50 z-50">
+            <svg
+                className="animate-spin"
+                style={{ animationDuration: `${duration}s` }}
+                width="50"
+                height="50"
+                viewBox="0 0 24 24"
+            >
+                <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                />
+                <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+            </svg>
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
-export default DemoWithLoading;
+export default FlexibleLoadingSpinner;

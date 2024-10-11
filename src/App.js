@@ -1,45 +1,45 @@
-// src/App.js
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { UserProvider } from './context/AuthContext';
+import { TokenProvider } from './context/TokenContext';
+import { ActorProvider } from './context/ActorContext';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
-import UserProfile from "./components/UserProfile/UserProfil";
-import SewingNetwork from "./components/Accueil";
-import UserList from "./components/user/UserTest";
-//import UserProfile from "./components/UserProfile";
+import UserProfile from './components/UserProfile/UserProfil';
+import SewingNetwork from './components/Accueil';
+
+// Créez une instance de QueryClient
+const queryClient = new QueryClient();
+
 
 function App() {
 
     return (
-        <AuthProvider>
-            <Router>
+        <QueryClientProvider client={queryClient}>
+            <ActorProvider>
+                <TokenProvider>
+                    <UserProvider>
+                        <Router>
+                            <Routes>
+                                <Route path="/login" element={<Login />} />
 
-                <Routes>
-                    <Route path="/" element={
-
-                        <UserList />
-
-                    } /> {/* Redirection vers la page de connexion */}
-
-
-                    <Route path="/profile" element={
-                            <ProtectedRoute >
-                                <UserProfile />
-                            </ProtectedRoute>
-                        }
-                    />
-                     <Route path="/home" element={
-                            <ProtectedRoute>
-                                <SewingNetwork/>
-                            </ProtectedRoute>
-                        } />
-
-
-
-                </Routes>
-            </Router>
-        </AuthProvider>
-
+                                <Route path="/profile" element={
+                                    <ProtectedRoute>
+                                        <UserProfile />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/" element={
+                                    <ProtectedRoute>
+                                        <SewingNetwork />
+                                    </ProtectedRoute>
+                                } />
+                            </Routes>
+                        </Router>
+                    </UserProvider>
+                </TokenProvider>
+            </ActorProvider>
+        </QueryClientProvider>
     );
 }
 

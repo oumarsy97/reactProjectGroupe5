@@ -1,6 +1,5 @@
 import axios from 'axios';
-import { getToken } from '../utils/tokenUtils';  // Pour récupérer le token depuis utils
-
+import {useTokenService} from '../utils/tokenUtils'
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 
@@ -15,7 +14,7 @@ export const createActor = async (actorData) => {
 }
 
 export const fetchActors = async () => {
-    const token = getToken();
+    const token = useTokenService.getToken()
     const response = await axios.get(`${API_BASE_URL}/actors/getactors`, {
         headers: {
             Authorization: `Bearer ${token}`,
@@ -25,7 +24,7 @@ export const fetchActors = async () => {
 }
 
 export const fetchActorById = async (actorId) => {
-    const token = getToken();
+    const token = useTokenService.getToken()
     const response = await axios.get(`${API_BASE_URL}/actors/getactorbyid/${actorId}`, {
         headers: {
             Authorization: `Bearer ${token}`,
@@ -35,7 +34,7 @@ export const fetchActorById = async (actorId) => {
 }
 
 export const fetActorByUserId = async () => {
-    const token = getToken();
+    const token = useTokenService.getToken()
     const response = await axios.get(`${API_BASE_URL}/actors/monprofile/`, {
         headers: {
             Authorization: `Bearer ${token}`,

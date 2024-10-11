@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Edit2, MapPin, Mail, Phone, Star, Grid, Bookmark, Heart, MessageCircle, Settings, Bell, X, ArrowLeft, Shield, Lock } from 'lucide-react';
 import Navbar from "./Navbar";
 import {useAuth} from "../../context/AuthContext";
+import { useActor} from "../../context/ActorContext";
 
 const UserProfile = () => {
   const { login: setUser } = useAuth();
   const { user } = useAuth();
+  const { actor } = useActor();
 
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
@@ -43,7 +45,7 @@ const UserProfile = () => {
   const [currentPage, setCurrentPage] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState(user);
-  const [activeTab, setActiveTab] = useState('posts');
+  const [activeTab, setActiveTab] = useState('produits');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -222,7 +224,7 @@ const UserProfile = () => {
                   <div className="relative">
                     <input
                         type="tel"
-                        value={editedUser.phone}
+                        value={user.phone}
                         onChange={(e) => setEditedUser({ ...editedUser, phone: e.target.value })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
                     />
@@ -234,7 +236,7 @@ const UserProfile = () => {
                   <div className="relative">
                     <input
                         type="text"
-                        value={editedUser.address}
+                        value={actor.address}
                         onChange={(e) => setEditedUser({ ...editedUser, address: e.target.value })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
                     />
@@ -286,17 +288,17 @@ const UserProfile = () => {
         <div className="max-w-7xl mx-auto px-4 py-8 bg-gradient-to-b from-purple-50 to-white min-h-screen">
           <motion.div
               className="mb-6 flex justify-end gap-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
+              initial={{opacity: 0}}
+              animate={{opacity: 1}}
+              transition={{delay: 0.2}}
           >
             {/* ... Boutons existants avec de nouvelles classes ... */}
             <button
                 className="p-2 hover:bg-white hover:shadow-lg rounded-full transition-all duration-300 relative group"
                 onClick={() => handleSettingsClick('notifications')}
             >
-              <Bell className="w-6 h-6 text-purple-600 group-hover:scale-110 transition-transform" />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <Bell className="w-6 h-6 text-purple-600 group-hover:scale-110 transition-transform"/>
+              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse"/>
             </button>
           </motion.div>
 
@@ -307,8 +309,8 @@ const UserProfile = () => {
             <div className="flex flex-col lg:flex-row gap-8">
               <motion.div
                   className="flex-shrink-0"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 300 }}
+                  whileHover={{scale: 1.05}}
+                  transition={{type: "spring", stiffness: 300}}
               >
                 <div className="relative w-48 h-48">
                   <img
@@ -318,11 +320,11 @@ const UserProfile = () => {
                   />
                   <motion.label
                       className="absolute bottom-2 right-2 p-3 bg-purple-600 rounded-full cursor-pointer hover:bg-purple-700 shadow-lg"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={{scale: 1.1}}
+                      whileTap={{scale: 0.95}}
                   >
-                    <Camera className="w-5 h-5 text-white" />
-                    <input type="file" className="hidden" />
+                    <Camera className="w-5 h-5 text-white"/>
+                    <input type="file" className="hidden"/>
                   </motion.label>
                 </div>
               </motion.div>
@@ -338,10 +340,10 @@ const UserProfile = () => {
                   <motion.button
                       onClick={() => setIsEditing(true)}
                       className="px-6 py-2 bg-purple-600 text-white rounded-full flex items-center gap-2 hover:bg-purple-700 shadow-md hover:shadow-lg transition-all"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={{scale: 1.05}}
+                      whileTap={{scale: 0.95}}
                   >
-                    <Edit2 className="w-4 h-4" />
+                    <Edit2 className="w-4 h-4"/>
                     Modifier le profil
                   </motion.button>
                 </motion.div>
@@ -349,19 +351,19 @@ const UserProfile = () => {
                 <motion.div
                     className="grid grid-cols-3 gap-6 mb-6"
                     {...fadeInUp}
-                    transition={{ delay: 0.1 }}
+                    transition={{delay: 0.1}}
                 >
                   <div className="bg-purple-50 p-4 rounded-xl text-center hover:bg-purple-100 transition-colors">
-                    <div className="font-bold text-2xl text-purple-600">{user.followers}</div>
+                    <div className="font-bold text-2xl text-purple-600">{actor.follow.length}</div>
                     <div className="text-purple-600 text-sm">Abonnés</div>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-xl text-center hover:bg-purple-100 transition-colors">
-                    <div className="font-bold text-2xl text-purple-600">{user.following}</div>
+                    <div className="font-bold text-2xl text-purple-600">{actor.follow.length}</div>
                     <div className="text-purple-600 text-sm">Abonnements</div>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-xl text-center hover:bg-purple-100 transition-colors">
                     <div className="font-bold text-2xl text-purple-600 flex items-center justify-center gap-1">
-                      <Star className="w-5 h-5 text-yellow-400" />
+                      <Star className="w-5 h-5 text-yellow-400"/>
                       {user.rating}
                     </div>
                     <div className="text-purple-600 text-sm">{user.totalReviews} avis</div>
@@ -371,27 +373,27 @@ const UserProfile = () => {
                 <motion.div
                     className="space-y-3"
                     {...fadeInUp}
-                    transition={{ delay: 0.2 }}
+                    transition={{delay: 0.2}}
                 >
                   {[
-                    { icon: Mail, value: user.email },
-                    { icon: Phone, value: user.phone },
-                    { icon: MapPin, value: user.address }
+                    {icon: Mail, value: user.email},
+                    {icon: Phone, value: user.phone},
+                    {icon: MapPin, value: actor.address}
                   ].map((item, index) => (
                       <motion.div
                           key={index}
                           className="flex items-center gap-3 text-gray-600 bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors"
-                          whileHover={{ x: 10 }}
+                          whileHover={{x: 10}}
                       >
-                        <item.icon className="w-5 h-5 text-purple-500" />
+                        <item.icon className="w-5 h-5 text-purple-500"/>
                         {item.value}
                       </motion.div>
                   ))}
                   <motion.p
                       className="text-gray-600 bg-gray-50 p-4 rounded-lg italic"
-                      whileHover={{ scale: 1.02 }}
+                      whileHover={{scale: 1.02}}
                   >
-                    "{user.bio}"
+                    "{actor.bio}"
                   </motion.p>
                 </motion.div>
               </div>
@@ -401,10 +403,10 @@ const UserProfile = () => {
           <motion.div
               className="bg-white rounded-2xl shadow-xl p-6"
               {...scaleUp}
-              transition={{ delay: 0.3 }}
+              transition={{delay: 0.3}}
           >
             <div className="flex gap-6 mb-6 overflow-x-auto">
-              {['posts', 'liked', 'saved', 'reposts'].map((tab) => (
+              {['produits', 'liked', 'saved', 'reposts'].map((tab) => (
                   <motion.button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
@@ -413,27 +415,61 @@ const UserProfile = () => {
                               ? 'bg-purple-600 text-white shadow-lg'
                               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileHover={{scale: 1.05}}
+                      whileTap={{scale: 0.95}}
                   >
                     {/* ... Icônes des onglets ... */}
-                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    {tab === 'produits' && actor.role !== 'VENDOR' ? 'Posts' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </motion.button>
               ))}
-            </div>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-              >
-                {/* ... Contenu des onglets avec animations ... */}
-                {activeTab === 'posts' && (
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+              key={activeTab}
+              initial={{opacity: 0, y: 20}}
+              animate={{opacity: 1, y: 0}}
+              exit={{opacity: 0, y: -20}}
+              transition={{duration: 0.3}}
+          >
+            {/* ... Contenu des onglets avec animations ... */}
+            {activeTab === 'produits' && (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {actor.posts.map((post, index) => (
+                      <motion.div
+                          key={post.id}
+                          className="relative group aspect-[3/4] rounded-xl overflow-hidden shadow-lg"
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: index * 0.1 }}
+                          >
+                            <img
+                                src={post.photo}
+                                alt={`Post ${post.id}`}
+                                className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                                <div className="flex justify-center space-x-6">
+                                  <div className="flex items-center">
+                                    <Heart className="w-5 h-5 mr-2" fill="white" />
+                                    {post.likes}
+                                  </div>
+                                  <div className="flex items-center">
+                                    <MessageCircle className="w-5 h-5 mr-2" />
+                                    {post.comments}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                      ))}
+                    </div>
+                )}
+                {activeTab === 'produits' && (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                      {posts.map((post, index) => (
+                      {actor.produits.map((post, index) => (
                           <motion.div
                               key={post.id}
                               className="relative group aspect-[3/4] rounded-xl overflow-hidden shadow-lg"

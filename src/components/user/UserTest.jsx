@@ -6,8 +6,8 @@ const UserList = () => {
     const { data: users, loading, error, get, create, update, remove } = useCrud('http://localhost:5000/api/v1');
 
     useEffect(() => {
-        get();
-        console.log(users);
+       // get();
+       // console.log(users);
         }, [users]);
 
     if (loading) return <p>Chargement...</p>;

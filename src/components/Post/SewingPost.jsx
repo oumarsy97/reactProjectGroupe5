@@ -1,53 +1,80 @@
-import React from 'react';
-import { Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
+import React, { useRef, useEffect } from 'react';
+import { Heart, MessageCircle, Share2, Bookmark, UserPlus } from 'lucide-react';
+import { getTimeDifference } from "../../utils/tokenUtils";
 
 const PostSwing = ({ post }) => {
     const {
         content,
         createdAt,
         photo,
-        video,
         user,
         likes,
         comments,
         tags
     } = post;
 
-    const timeAgo = new Date(createdAt).toLocaleDateString();
+    const videoRef = useRef(null);
+
+
+    const isVideo = (url) => {
+        return url.includes('/video/upload/');
+    };
+
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.defaultMuted = false;
+        }
+    }, []);
 
     return (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="p-6">
-                <div className="flex items-center">
-                    <div className="h-12 w-12 rounded-full bg-gradient-to-r from-rose-400 to-purple-400 p-0.5">
-                        <div className="h-full w-full rounded-full relative overflow-hidden bg-white">
-                            <img src={user.user.photo} alt="Profile" className="rounded-full" />
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                        <div className="h-12 w-12 rounded-full bg-gradient-to-r from-rose-400 to-purple-400 p-0.5">
+                            <div className="h-full w-full rounded-full relative overflow-hidden bg-white">
+                                <img src={user.user.photo} alt="Profile" className="rounded-full" />
+                            </div>
+                        </div>
+                        <div className="ml-4">
+                            <h3 className="font-medium">{`${user.user.firstname} ${user.user.lastname}`}</h3>
+                            <p className="text-gray-500 text-sm">{getTimeDifference(createdAt)}</p>
                         </div>
                     </div>
-                    <div className="ml-4">
-                        <h3 className="font-medium">{`${user.user.firstname} ${user.user.lastname}`}</h3>
-                        <p className="text-gray-500 text-sm">{timeAgo}</p>
-                    </div>
+                    <button className="flex px-4 py-1 text-white text-sm font-medium rounded-full bg-gradient-to-br from-black to-purple-900 hover:opacity-90 transition-opacity duration-200">
+                        <UserPlus className="h-5 w-5" />
+                        <span>Suivre</span>
+                    </button>
                 </div>
                 <p className="mt-4">{content}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                     {tags.map((tag) => (
                         <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-              #{tag}
-            </span>
+                            #{tag}
+                        </span>
                     ))}
                 </div>
             </div>
 
-            <div className="media-container">
-                {photo && <img src={photo} alt="Post" className="w-full" type="video/mp4" />}
-                {video && (
-                    <video controls className="w-full">
-                        <source src={video} type="video/mp4" />
-                        Votre navigateur ne supporte pas la lecture de vidéos.
-                    </video>
-                )}
-            </div>
+            {photo && (
+                <div className="media-container">
+                    {isVideo(photo) ? (
+                        <video
+                            ref={videoRef}
+                            controls
+                            className="w-full"
+                            playsInline
+                            preload="metadata"
+                            muted={false} // Ajouté cette ligne pour s'assurer que le son est activé
+                        >
+                            <source src={photo} type="video/mp4" />
+                            Votre navigateur ne supporte pas la lecture de vidéos.
+                        </video>
+                    ) : (
+                        <img src={photo} alt="Post" className="w-full" />
+                    )}
+                </div>
+            )}
 
             <div className="p-6 border-t border-gray-100">
                 <div className="flex justify-between text-gray-600">

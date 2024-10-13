@@ -33,10 +33,12 @@ const Login = () => {
             if (token && !isAuthenticated) {
                 try {
                     await loadUserData(token);
-                    navigate('/');
                     setIsAuthenticated(true);
+                    navigate('/');
+                    AlertService.success("Vous êtes maintenant connecté");
                 } catch (err) {
                     handleLogout();
+                    await AlertService.error("Vous avez été déconnecté");
                 }
             }
         };
@@ -67,7 +69,7 @@ const Login = () => {
                 setToken(data.token);
                 await loadUserData(data.token);
                 setIsAuthenticated(true);
-                navigate('/home');
+                navigate('/');
                 AlertService.success("Connexion réussie");
             } else {
                 // Logique d'inscription (le composant Signup prend en charge cela)
@@ -75,7 +77,7 @@ const Login = () => {
         } catch (err) {
             setError("Une erreur est survenue. Veuillez réessayer.");
         } finally {
-            setLoading(false);
+           // setLoading(false);
         }
     };
 

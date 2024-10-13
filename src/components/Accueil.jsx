@@ -1,46 +1,44 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useQuery } from 'react-query';
 import Navbar from "./UserProfile/Navbar";
 import SidebarLeft from "./sideBar/SidebarLeft";
 import SewingPost from "./Post/SewingPost";
 import SidebarTop from "./sideBar/SidebarTop";
 import SidebarRight from "./sideBar/SidebarRight";
-import { getTimeDifference } from "../utils/tokenUtils";
 import useCrud from "../hooks/useCrudAxios";
-import {useToken} from "../context/TokenContext";
-import  {useActor} from "../context/ActorContext";
+import { useToken } from "../context/TokenContext";
+import { useActor } from "../context/ActorContext";
+import SwingProduit from "./Produits/SwingProduit";
 
 const SewingNetwork = () => {
     const { getToken } = useToken();
-    const {actor} = useActor();    const [activeFilter, setActiveFilter] = useState('tous');
-    const crudPosts = useCrud('posts/others')
-    const crudPostsAll = useCrud('posts');
+    const { actor } = useActor();
+    const [activeFilter, setActiveFilter] = useState('tous');
 
-    const crudProduits = useCrud('produits/others');
-    const crudProduitsAll = useCrud('produits');
+    const crudPosts = useCrud(actor ? 'posts/others' : 'posts');
+    const crudProduits = useCrud(actor ? 'produits/others' : 'produits');
 
-
-
-
-
-
-    const { data: posts, isLoading, isError } = useQuery('posts', () => crudPosts.get(), {
-        staleTime: 60000, // 1 minute
+    const { data: posts, isLoading: isLoadingPosts, isError: isErrorPosts } = useQuery('posts', () => crudPosts.get(), {
+        staleTime: 60000,
         refetchOnWindowFocus: false,
     });
 
-    const shuffleAndFilterPosts = useCallback((posts) => {
-        console.log( posts)
-        if (!posts) return [];
-        const shuffledPosts = [...posts].sort(() => Math.random() - 0.5);
-        return shuffledPosts.filter(post => {
+    const { data: produits, isLoading: isLoadingProduits, isError: isErrorProduits } = useQuery('produits', () => crudProduits.get(), {
+        staleTime: 60000,
+        refetchOnWindowFocus: false,
+    });
+
+    const shuffleAndFilterItems = useCallback((items) => {
+        if (!items) return [];
+        const shuffledItems = [...items].sort(() => Math.random() - 0.5);
+        return shuffledItems.filter(item => {
             switch(activeFilter) {
                 case 'tendances':
-                    return post.likes.length > 10;
+                    return item.likes && item.likes.length > 10;
                 case 'recent':
-                    const postDate = new Date(post.createdAt);
+                    const itemDate = new Date(item.createdAt);
                     const now = new Date();
-                    const diffHours = (now - postDate) / (1000 * 60 * 60);
+                    const diffHours = (now - itemDate) / (1000 * 60 * 60);
                     return diffHours < 24;
                 default:
                     return true;
@@ -48,7 +46,17 @@ const SewingNetwork = () => {
         });
     }, [activeFilter]);
 
-    const filteredPosts = shuffleAndFilterPosts(posts);
+    const combinedItems = useMemo(() => {
+        if (!posts || !produits) return [];
+        const allItems = [
+            ...posts.map(post => ({ ...post, type: 'post' })),
+            ...produits.map(produit => ({ ...produit, type: 'produit' }))
+        ];
+        return shuffleAndFilterItems(allItems);
+    }, [posts, produits, shuffleAndFilterItems]);
+
+    const isLoading = isLoadingPosts || isLoadingProduits;
+    const isError = isErrorPosts || isErrorProduits;
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -58,14 +66,16 @@ const SewingNetwork = () => {
                 <div className="col-span-6 space-y-6">
                     <SidebarTop activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
                     {isLoading ? (
-                        <p>Chargement des posts...</p>
+                        <p>Chargement des éléments...</p>
                     ) : isError ? (
-                        <p>Une erreur est survenue lors du chargement des posts.</p>
+                        <p>Une erreur est survenue lors du chargement des éléments.</p>
                     ) : (
-                        filteredPosts.map(post => (
-                            <SewingPost
-                               post={post}
-                            />
+                        combinedItems.map(item => (
+                            item.title ? (
+                                <SewingPost  post={item} />
+                            ) : (
+                                <SwingProduit  produit={item} />
+                            )
                         ))
                     )}
                 </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, DollarSign, Box } from 'lucide-react';
+import {getTimeDifference} from "../../utils/tokenUtils";
 
 const SwingProduit = ({ produit }) => {
     const {
@@ -27,7 +28,7 @@ const SwingProduit = ({ produit }) => {
                     </div>
                     <div className="ml-4">
                         <h3 className="font-medium">{`${vendor.user.firstname} ${vendor.user.lastname}`}</h3>
-                        <p className="text-gray-500 text-sm">{timeAgo}</p>
+                        <p className="text-gray-500 text-sm">{getTimeDifference(createdAt)}</p>
                     </div>
                 </div>
                 <h2 className="mt-4 text-xl font-semibold">{libelle}</h2>

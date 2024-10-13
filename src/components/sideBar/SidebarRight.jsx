@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Star, CreditCard, TrendingUp, Coins, Gift, History, ArrowLeft } from 'lucide-react';
+import {  TrendingUp, Coins, Gift, History, ArrowLeft } from 'lucide-react';
 import useCrud from "../../hooks/useCrudAxios";
 import {useActor} from "../../context/ActorContext";
 import AlertService from "../../services/notifications/AlertService";
+import ProfileChangeForm from "../user/ProfileChangeForm";
 
 const SidebarRight = () => {
     const [showCreditHistory, setShowCreditHistory] = useState(false);
@@ -209,7 +210,8 @@ const SidebarRight = () => {
             <div className="space-y-6 sticky top-24">
                 {/* Section Crédits */}
                 <div className="bg-gradient-to-b from-black to-purple-900 rounded-xl shadow-lg p-6 text-white">
-                    {renderCreditSection()}
+                    {actor && renderCreditSection()}
+                    {!actor && <ProfileChangeForm />}
                 </div>
 
                 {/* Tendances */}

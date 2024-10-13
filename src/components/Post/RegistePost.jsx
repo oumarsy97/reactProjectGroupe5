@@ -3,7 +3,6 @@ import { X, ImagePlus, Tag, Sparkles, Plus, Maximize } from 'lucide-react';
 import useCrud from "../../hooks/useCrudAxios";
 import AlertService from "../../services/notifications/AlertService";
 import { useActor } from "../../context/ActorContext";
-import FlexibleLoadingSpinner from "./Load";
 
 const SIZE = {
     XS: 'XS',
@@ -12,7 +11,6 @@ const SIZE = {
     L: 'L',
     XL: 'XL'
 };
-const MAX_IMAGE_SIZE = 1024 * 1024; // 1MB
 
 export default function AddPostModal() {
     const [isOpen, setIsOpen] = useState(false);

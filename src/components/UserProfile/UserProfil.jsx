@@ -454,11 +454,11 @@ const UserProfile = () => {
                                 <div className="flex justify-center space-x-6">
                                   <div className="flex items-center">
                                     <Heart className="w-5 h-5 mr-2" fill="white" />
-                                    {post.likes}
+                                    {post.likes.length}
                                   </div>
                                   <div className="flex items-center">
                                     <MessageCircle className="w-5 h-5 mr-2" />
-                                    {post.comments}
+                                    {post.comments.length}
                                   </div>
                                 </div>
                               </div>

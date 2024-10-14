@@ -2,10 +2,12 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useActor } from "../../context/ActorContext";
 import { MapPin, CreditCard, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ProfileCard = () => {
     const { user } = useAuth();
     const { actor } = useActor();
+    const navigate = useNavigate();
 
     if (!user) return null;
 
@@ -31,19 +33,20 @@ const ProfileCard = () => {
                 {user.role !== 'USER' && actor && (
                     <div className="mt-4 space-y-3">
                         <div className="flex items-center text-gray-600">
-                            <MapPin className="w-5 h-5 mr-2 text-violet-500" />
+                            <MapPin className="w-5 h-5 mr-2 text-violet-500"/>
                             <span>{actor.address || 'Pas d\'adresse'}</span>
                         </div>
 
                         <div className="flex items-center text-gray-600">
-                            <CreditCard className="w-5 h-5 mr-2 text-violet-500" />
+                            <CreditCard className="w-5 h-5 mr-2 text-violet-500"/>
                             <span>Crédits restants: {actor.credits || 0}</span>
                         </div>
 
                         <div className="flex items-start text-gray-600">
-                            <User className="w-5 h-5 mr-2 text-violet-500 mt-1" />
+                            <User className="w-5 h-5 mr-2 text-violet-500 mt-1"/>
                             <p className="flex-1">{actor.bio || 'Pas de bio disponible'}</p>
                         </div>
+
                     </div>
                 )}
             </div>

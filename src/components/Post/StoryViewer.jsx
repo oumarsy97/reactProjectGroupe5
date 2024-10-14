@@ -39,7 +39,7 @@ const StoryViewer = ({ stories, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center">
+        <div className="fixed inset-0 z-10 bg-black bg-opacity-90 flex items-center justify-center">
             <div className="w-full max-w-md relative">
                 {/* Barre de progression */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gray-300">
@@ -51,9 +51,9 @@ const StoryViewer = ({ stories, onClose }) => {
 
                 {/* Story content */}
                 <div className="relative">
-                    {currentStory.type === 'image' ? (
+                    {currentStory ? (
                         <img
-                            src={currentStory.url}
+                            src={currentStory.photo}
                             alt="story"
                             className="w-full h-full object-cover rounded-lg"
                         />

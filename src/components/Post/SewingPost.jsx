@@ -1,23 +1,49 @@
-import React, { useRef, useEffect } from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, UserPlus } from 'lucide-react';
 import { getTimeDifference } from "../../utils/tokenUtils";
+import useCrud from "../../hooks/useCrudAxios";
+import {useAuth} from "../../context/AuthContext";
+import AlertService from "../../services/notifications/AlertService";
+import PostCommentsPopup from "./PostCommentpopup";
+import CommentSystemDemo from "./PostCommentpopup";
 
 const PostSwing = ({ post }) => {
     const {
-        content,
+        id,
+        title,
+        description,
         createdAt,
         photo,
         user,
-        likes,
         comments,
         tags
     } = post;
+    const { user: currentUser } = useAuth();
 
+
+    const [likes, setLikes] = useState(post.likes);
     const videoRef = useRef(null);
+    const [isLiked, setIsLiked] = useState(likes.some(like => like.idUser ===(currentUser.id)));
+    const [likeCount, setLikeCount] = useState(likes.length);
+    const { create: createLike } = useCrud(`posts/like/${id}`);
 
 
     const isVideo = (url) => {
         return url.includes('/video/upload/');
+    };
+
+    const handleLikeClick = async () => {
+        const newIsLiked = !isLiked;
+        setIsLiked(newIsLiked);
+
+        const data = await createLike([], true);
+
+        if (data) {
+            setLikes(prevLikes => [...prevLikes, data]);
+        } else {
+            setLikes(prevLikes => prevLikes.filter(like => like.idUser !== currentUser.id));
+        }
+
     };
 
     useEffect(() => {
@@ -46,7 +72,8 @@ const PostSwing = ({ post }) => {
                         <span>Suivre</span>
                     </button>
                 </div>
-                <p className="mt-4">{content}</p>
+                <p className="font-bold mt-2">{title}</p>
+                <p className="mt-4">{description}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                     {tags.map((tag) => (
                         <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
@@ -78,19 +105,23 @@ const PostSwing = ({ post }) => {
 
             <div className="p-6 border-t border-gray-100">
                 <div className="flex justify-between text-gray-600">
-                    <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
-                        <Heart className="h-5 w-5" />
+                    <button
+                        className={`flex items-center space-x-2 transition-colors ${isLiked ? 'text-rose-500' : 'hover:text-rose-500'}`}
+                        onClick={handleLikeClick}
+                    >
+                        <Heart className="h-5 w-5" fill={isLiked ? "currentColor" : "none"}/>
                         <span>{likes.length}</span>
                     </button>
                     <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
-                        <MessageCircle className="h-5 w-5" />
+                        <MessageCircle className="h-5 w-5"/>
                         <span>{comments.length}</span>
+                        <CommentSystemDemo comment={comments} id={id} />
                     </button>
                     <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
-                        <Share2 className="h-5 w-5" />
+                        <Share2 className="h-5 w-5"/>
                     </button>
                     <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
-                        <Bookmark className="h-5 w-5" />
+                        <Bookmark className="h-5 w-5"/>
                     </button>
                 </div>
             </div>

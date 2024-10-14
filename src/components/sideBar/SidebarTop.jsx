@@ -1,15 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import FilterButtons from "../Post/FilterButtons";
-import ChatApp from "../Story/StoryComponent";
+import StoryApp from "../Story/StoryComponent";
 
 const SidebarTop = ({ activeFilter, setActiveFilter, className, sticky = true }) => {
     const stickyClass = sticky ? 'sticky top-24' : '';
 
     return (
         <div className={`col-span-3 ${className}`}>
-            <ChatApp />
-            <div className={`${stickyClass} space-y-4`}>
+            <StoryApp />
+            <div className={`${stickyClass} space-y-4 mt-4`}>
                 <FilterButtons
                     activeFilter={activeFilter}
                     setActiveFilter={setActiveFilter}

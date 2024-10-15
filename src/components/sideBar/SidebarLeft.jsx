@@ -21,6 +21,8 @@ const SidebarLeft = () => {
     const { user } = useAuth();
     const { actor } = useActor();
     const navigate = useNavigate();
+    if (!user) return null;
+
 
     return (
         <div className="col-span-3">
@@ -28,7 +30,7 @@ const SidebarLeft = () => {
                 <ProfileCard />
                 <div className="mt-6 space-y-4">
                     <StatsCard icon={Users} title="Abonnés" value={actor?.follow?.length || 0} />
-                    <StatsCard icon={Eye} title="Suivi(e)s" value={actor?.following?.length || 0} />
+                    <StatsCard icon={Eye} title="Suivi(e)s" value={user?.follow?.length || 0} />
                     {user?.role === 'TAILOR' && (
                         <StatsCard icon={Scissors} title="Mes Créations" value={actor?.posts?.length || 0} />
                     )}

@@ -16,7 +16,6 @@ const CommentSystemDemo = ({id}, {comment}) => {
         const fetchComments = async () => {
             try {
                 const rawData = await crudComment.get();
-              //:  console.log(rawData);
 
                 // Mapper les données brutes au format souhaité
                 const formattedComments = rawData.map(comment => ({
@@ -31,7 +30,7 @@ const CommentSystemDemo = ({id}, {comment}) => {
                     isLiked: comment.isLikedByCurrentUser, // Assurez-vous que cette propriété existe dans vos données brutes
                     replies: [] // Si vous avez des réponses, vous devrez les formater également
                 }));
-                console.log(formattedComments);
+
 
                 setComments(formattedComments);
             } catch (error) {
@@ -105,9 +104,8 @@ const CommentSystemDemo = ({id}, {comment}) => {
         <div className="p-4">
             <button
                 onClick={() => setIsPopupOpen(true)}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-full hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
-                Afficher les commentaires
+                <MessageCircle className="h-5 w-5"/>
             </button>
 
             <CommentsPopup

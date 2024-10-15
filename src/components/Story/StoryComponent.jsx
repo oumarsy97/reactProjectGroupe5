@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useCrud from "../../hooks/useCrudAxios";
+import { useAuth } from '../../context/AuthContext';
 
 const storiesData = [
     {
@@ -160,6 +161,7 @@ const StoryApp = () => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [storyMessage, setStoryMessage] = useState("");
     const fileInputRef = useRef(null);
+    const { user } = useAuth();
     const [stories, setStories] = useState(storiesData);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -185,7 +187,7 @@ const StoryApp = () => {
                         };
                     }
                     acc[actorId].photo.push(story.photo);
-                    acc[actorId].messages.push(story.description || ''); // Utilisez une chaîne vide si description est null
+                    acc[actorId].messages.push(story.description || '');
                     return acc;
                 }, {});
 
@@ -243,7 +245,7 @@ const StoryApp = () => {
                 <div className='flex gap-4'>
                     <div className="flex items-center mb-6 cursor-pointer border-r p-2" onClick={addNewStory}>
                         <div className="relative">
-                            <img src="ousseynouODC.jpeg" alt="Your status" className="w-14 h-14 rounded-full" />
+                            <img src={user?.photo} alt="Your status" className="w-14 h-14 rounded-full border" />
                             <button className="absolute bottom-0 right-0 bg-teal-500 rounded-full px-2">
                                 <span>+</span>
                             </button>

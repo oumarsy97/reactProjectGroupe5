@@ -12,6 +12,7 @@ export const UserProvider = ({ children }) => {
 
     const logout = () => {
         setUser(null); // Réinitialiser l'utilisateur
+
     };
 
     return (

@@ -1,10 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Heart, Share2, Bookmark, UserPlus, UserCheck } from 'lucide-react';
+import { Heart, Share2, Bookmark } from 'lucide-react';
 import { getTimeDifference } from "../../utils/tokenUtils";
 import useCrud from "../../hooks/useCrudAxios";
 import { useAuth } from "../../context/AuthContext";
-import AlertService from "../../services/notifications/AlertService";
 import CommentSystemDemo from "./PostCommentpopup";
+import FollowButton from "../FollowButton";
+import { useNavigate } from 'react-router-dom';
 
 const PostSwing = ({ post }) => {
     const {
@@ -18,27 +19,20 @@ const PostSwing = ({ post }) => {
         tags
     } = post;
     const { user: currentUser } = useAuth();
+    const navigate = useNavigate();
 
     const [likes, setLikes] = useState(post.likes);
     const videoRef = useRef(null);
     const [isLiked, setIsLiked] = useState(likes.some(like => like.idUser === currentUser.id));
     const [likeCount, setLikeCount] = useState(likes.length);
     const { create: createLike } = useCrud(`posts/like/${id}`);
-    const { create: toggleFollow } = useCrud(`follows/follow/${user.id}`);
-
-
-    const [isFollowing, setIsFollowing] = useState(currentUser.follow.some( fol => fol.idActor === id)); // You might want to initialize this based on actual follow status
-
-    useEffect(() => {
-
-            setIsFollowing(currentUser.follow.some(fol => fol.idActor === id));
-
-    }, [currentUser, isFollowing]);
-
-
 
     const isVideo = (url) => {
         return url.includes('/video/upload/');
+    };
+
+    const handleProfileClick = () => {
+        navigate(`/users/${user.id}`);
     };
 
     const handleLikeClick = async () => {
@@ -56,21 +50,6 @@ const PostSwing = ({ post }) => {
         }
     };
 
-    const handleFollowClick = async () => {
-        const newIsFollowing = !isFollowing;
-        setIsFollowing(newIsFollowing);
-        try {
-            await toggleFollow([], true);
-            // You might want to update the user object or trigger a re-fetch of user data here
-            AlertService.success(newIsFollowing ? "Vous suivez maintenant cet utilisateur" : "Vous ne suivez plus cet utilisateur");
-        } catch (error) {
-            console.error("Error toggling follow status:", error);
-            setIsFollowing(!newIsFollowing); // Revert the state if the API call fails
-            await AlertService.error("Une erreur est survenue. Veuillez réessayer.");
-        }
-    };
-
-
     useEffect(() => {
         if (videoRef.current) {
             videoRef.current.defaultMuted = false;
@@ -83,35 +62,24 @@ const PostSwing = ({ post }) => {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
                         <div className="h-12 w-12 rounded-full bg-gradient-to-r from-rose-400 to-purple-400 p-0.5">
-                            <div className="h-full w-full rounded-full relative overflow-hidden bg-white">
-                                <img src={user.user.photo} alt="Profile" className="rounded-full" />
+
+                            <div className="h-full w-full rounded-full relative overflow-hidden bg-white cursor-pointer"
+                                 onClick={handleProfileClick}>
+                                <img src={user.user.photo} alt="Profile" className="rounded-full"/>
                             </div>
+
+
                         </div>
                         <div className="ml-4">
                             <h3 className="font-medium">{`${user.user.firstname} ${user.user.lastname}`}</h3>
                             <p className="text-gray-500 text-sm">{getTimeDifference(createdAt)}</p>
                         </div>
                     </div>
-                    <button
-                        onClick={handleFollowClick}
-                        className={`flex items-center px-4 py-1 text-white text-sm font-medium rounded-full ${
-                            isFollowing
-                                ? 'bg-gray-500 hover:bg-gray-600'
-                                : 'bg-gradient-to-br from-black to-purple-900 hover:opacity-90'
-                        } transition-all duration-200`}
-                    >
-                        {isFollowing ? (
-                            <>
-                                <UserCheck className="h-5 w-5 mr-1" />
-                                <span>Suivi</span>
-                            </>
-                        ) : (
-                            <>
-                                <UserPlus className="h-5 w-5 mr-1" />
-                                <span>Suivre</span>
-                            </>
-                        )}
-                    </button>
+                    <FollowButton
+                        userId={user.id}
+                        initialIsFollowing={currentUser.follow.some(fol => fol.idActor === id)}
+                        currentUser={currentUser}
+                    />
                 </div>
                 <p className="font-bold mt-2">{title}</p>
                 <p className="mt-4">{description}</p>
@@ -122,6 +90,7 @@ const PostSwing = ({ post }) => {
                         </span>
                     ))}
                 </div>
+
             </div>
 
             {photo && (

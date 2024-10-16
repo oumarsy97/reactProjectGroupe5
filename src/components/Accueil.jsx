@@ -59,27 +59,31 @@ const SewingNetwork = () => {
     const isError = isErrorPosts || isErrorProduits;
 
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="flex flex-col min-h-screen bg-gray-100">
             <Navbar />
-            <div className="grid grid-cols-12 gap-12 pt-24 max-w-7xl mx-auto px-4">
-                <SidebarLeft />
-                <div className="col-span-6 space-y-6">
-                    <SidebarTop activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
-                    {isLoading ? (
-                        <p>Chargement des éléments...</p>
-                    ) : isError ? (
-                        <p>Une erreur est survenue lors du chargement des éléments.</p>
-                    ) : (
-                        combinedItems.map(item => (
-                            item.title ? (
-                                <SewingPost  post={item} />
-                            ) : (
-                                <SwingProduit  produit={item} />
-                            )
-                        ))
-                    )}
-                </div>
-                <SidebarRight />
+            <div className="flex flex-1">
+                <SidebarLeft className="hidden lg:block w-1/4" />
+                <main className="flex-1 p-4 w-full lg:w-1/2">
+                    <SidebarTop />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {isLoading ? (
+                            <p className="col-span-full text-center">Chargement des éléments...</p>
+                        ) : isError ? (
+                            <p className="col-span-full text-center text-red-500">Une erreur est survenue lors du chargement des éléments.</p>
+                        ) : (
+                            combinedItems.map(item => (
+                                <div key={item.id} className="bg-white rounded-lg shadow-md p-4">
+                                    {item.title ? (
+                                        <SwingProduit produit={item} />
+                                    ) : (
+                                        <SewingPost post={item} />
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </main>
+                <SidebarRight className="hidden lg:block w-1/4" />
             </div>
         </div>
     );

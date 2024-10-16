@@ -2,30 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import useCrud from "../../hooks/useCrudAxios";
 
 const storiesData = [
-    {
-        userName: "Jennifer",
-        userImage: "ousseynouODC.jpeg",
-        photo: [
-            "download6.jpg",
-            "WhatsApp Image 2024-04-29 at 15.39.20.jpeg",
-            "images.jpeg",
-        ],
-        messages: ["Beautiful day!", "Having fun!", "Perfect moment"],
-        views: 10,
-        isRead: false,
-    },
-    {
-        userName: "Michael Stone",
-        userImage: "ousseynouODC.jpeg",
-        photo: [
-            "images.jpeg",
-            "WhatsApp Image 2024-04-29 at 15.40.54.jpeg",
-            "WhatsApp Image 2024-04-29 at 15.38.36.jpeg",
-        ],
-        messages: ["At work!", "Coffee time", "Weekend vibes"],
-        views: 15,
-        isRead: false,
-    },
+
 ];
 
 const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead }) => {

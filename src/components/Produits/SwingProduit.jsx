@@ -11,7 +11,6 @@ const SwingProduit = ({ produit }) => {
         image,
         price,
         qte,
-        user,
         createdAt,
         vendor,
         notes,

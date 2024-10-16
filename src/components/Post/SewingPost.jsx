@@ -5,7 +5,6 @@ import useCrud from "../../hooks/useCrudAxios";
 import { useAuth } from "../../context/AuthContext";
 import CommentSystemDemo from "./PostCommentpopup";
 import FollowButton from "../FollowButton";
-import { useNavigate } from 'react-router-dom';
 
 const PostSwing = ({ post }) => {
     const {
@@ -19,7 +18,6 @@ const PostSwing = ({ post }) => {
         tags
     } = post;
     const { user: currentUser } = useAuth();
-    const navigate = useNavigate();
 
     const [likes, setLikes] = useState(post.likes);
     const videoRef = useRef(null);
@@ -29,10 +27,6 @@ const PostSwing = ({ post }) => {
 
     const isVideo = (url) => {
         return url.includes('/video/upload/');
-    };
-
-    const handleProfileClick = () => {
-        navigate(`/users/${user.id}`);
     };
 
     const handleLikeClick = async () => {
@@ -62,13 +56,9 @@ const PostSwing = ({ post }) => {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
                         <div className="h-12 w-12 rounded-full bg-gradient-to-r from-rose-400 to-purple-400 p-0.5">
-
-                            <div className="h-full w-full rounded-full relative overflow-hidden bg-white cursor-pointer"
-                                 onClick={handleProfileClick}>
-                                <img src={user.user.photo} alt="Profile" className="rounded-full"/>
+                            <div className="h-full w-full rounded-full relative overflow-hidden bg-white">
+                                <img src={user.user.photo} alt="Profile" className="rounded-full" />
                             </div>
-
-
                         </div>
                         <div className="ml-4">
                             <h3 className="font-medium">{`${user.user.firstname} ${user.user.lastname}`}</h3>
@@ -90,7 +80,6 @@ const PostSwing = ({ post }) => {
                         </span>
                     ))}
                 </div>
-
             </div>
 
             {photo && (

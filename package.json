@@ -1,6 +1,8 @@
+
 {
   "name": "react_tp3",
   "version": "0.1.0",
+
   "private": true,
   "dependencies": {
     "@headlessui/react": "^2.1.9",
@@ -27,6 +29,7 @@
     "react-router-dom": "^6.26.2",
     "react-scripts": "5.0.1",
     "recharts": "^2.12.7",
+    "socket.io-client": "^4.8.0",
     "sweetalert2": "^11.14.1",
     "tailwind-merge": "^2.5.3",
     "web-vitals": "^2.1.4"

@@ -1,10 +1,9 @@
-import React, {useRef, useEffect, useState} from 'react';
-import { Heart, MessageCircle, Share2, Bookmark, UserPlus } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Heart, Share2, Bookmark, UserPlus, UserCheck } from 'lucide-react';
 import { getTimeDifference } from "../../utils/tokenUtils";
 import useCrud from "../../hooks/useCrudAxios";
-import {useAuth} from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import AlertService from "../../services/notifications/AlertService";
-import PostCommentsPopup from "./PostCommentpopup";
 import CommentSystemDemo from "./PostCommentpopup";
 
 const PostSwing = ({ post }) => {
@@ -20,49 +19,79 @@ const PostSwing = ({ post }) => {
     } = post;
     const { user: currentUser } = useAuth();
 
-
     const [likes, setLikes] = useState(post.likes);
     const videoRef = useRef(null);
-    const [isLiked, setIsLiked] = useState(likes.some(like => like.idUser ===(currentUser.id)));
+    const [isLiked, setIsLiked] = useState(likes.some(like => like.idUser === currentUser.id));
     const [likeCount, setLikeCount] = useState(likes.length);
     const { create: createLike } = useCrud(`posts/like/${id}`);
+    const { create: toggleFollow } = useCrud(`follows/follow/${user.id}`);
+
+
+    const [isFollowing, setIsFollowing] = useState(currentUser.follow.some( fol => fol.idActor === id)); // You might want to initialize this based on actual follow status
+
+    useEffect(() => {
+
+            setIsFollowing(currentUser.follow.some(fol => fol.idActor === id));
+
+    }, [currentUser, isFollowing,id]);
+
 
 
     const isVideo = (url) => {
         return url.includes('/video/upload/');
     };
 
-    const handleLikeClick = async () => {
-        const newIsLiked = !isLiked;
-        setIsLiked(newIsLiked);
 
-        const data = await createLike([], true);
+        //method to add favorite post
+        const [isFavorited, setIsFavorited] = useState(post.favoris ? post.favoris.some(fav => fav.idUser === currentUser.id) : false);
+        const { create: createFavorite } = useCrud(`posts/favoris/${id}`);
 
-        if (data) {
-            setLikes(prevLikes => [...prevLikes, data]);
-        } else {
-            setLikes(prevLikes => prevLikes.filter(like => like.idUser !== currentUser.id));
+        const handleLikeClick = async () => {
+            const newIsLiked = !isLiked;
+            setIsLiked(newIsLiked);
+    
+            const data = await createLike([], true);
+    
+            if (data) {
+                setLikes(prevLikes => [...prevLikes, data]);
+                setLikeCount(prevCount => prevCount + 1);
+            } else {
+                setLikes(prevLikes => prevLikes.filter(like => like.idUser !== currentUser.id));
+                setLikeCount(prevCount => prevCount - 1);
+            }
+        };
+    
+        const handleFavorisClick = async () => {
+            const newIsFavorited = !isFavorited;
+            setIsFavorited(newIsFavorited);
+    
+            try {
+                await createFavorite([], true);
+                AlertService.success(newIsFavorited ? "Post ajouté aux favoris" : "Post retiré des favoris");
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour des favoris:", error);
+                setIsFavorited(!newIsFavorited); // Revenir à l'état précédent en cas d'erreur
+                AlertService.error("Une erreur est survenue. Veuillez réessayer.");
+            }
         }
 
+    const handleFollowClick = async () => {
+        const newIsFollowing = !isFollowing;
+        setIsFollowing(newIsFollowing);
+        try {
+            await toggleFollow([], true);
+            // You might want to update the user object or trigger a re-fetch of user data here
+            AlertService.success(newIsFollowing ? "Vous suivez maintenant cet utilisateur" : "Vous ne suivez plus cet utilisateur");
+        } catch (error) {
+            console.error("Error toggling follow status:", error);
+            setIsFollowing(!newIsFollowing); // Revert the state if the API call fails
+            await AlertService.error("Une erreur est survenue. Veuillez réessayer.");
+        }
     };
-    //method tu add favorite post
-    const [favorites, setFavorites] = useState(post.favorites || []);
-    const [isFavorited,setIsFavorited] = useState(favorites.some(fav => fav.idUser !== currentUser.id));
-    const [favCount,setFavCount] = useState(favorites.length);
-    const { create: createFavorite } = useCrud(`posts/favoris/${id}`);
-    const handleFavorisClick = async () => {
-        const newIsFavorited =!isFavorited;
-        setIsFavorited(newIsFavorited);
 
-        const data = await createFavorite([], true);
 
-        if (data) {
-            setFavorites(prevFavorites => [...prevFavorites, data]);
-        } else {
-            setFavorites(prevFavorites => prevFavorites.filter(fav => fav.idUser!== currentUser.id));
-        }
-       
-    }
+        
+
     useEffect(() => {
         if (videoRef.current) {
             videoRef.current.defaultMuted = false;
@@ -84,9 +113,25 @@ const PostSwing = ({ post }) => {
                             <p className="text-gray-500 text-sm">{getTimeDifference(createdAt)}</p>
                         </div>
                     </div>
-                    <button className="flex px-4 py-1 text-white text-sm font-medium rounded-full bg-gradient-to-br from-black to-purple-900 hover:opacity-90 transition-opacity duration-200">
-                        <UserPlus className="h-5 w-5" />
-                        <span>Suivre</span>
+                    <button
+                        onClick={handleFollowClick}
+                        className={`flex items-center px-4 py-1 text-white text-sm font-medium rounded-full ${
+                            isFollowing
+                                ? 'bg-gray-500 hover:bg-gray-600'
+                                : 'bg-gradient-to-br from-black to-purple-900 hover:opacity-90'
+                        } transition-all duration-200`}
+                    >
+                        {isFollowing ? (
+                            <>
+                                <UserCheck className="h-5 w-5 mr-1" />
+                                <span>Suivi</span>
+                            </>
+                        ) : (
+                            <>
+                                <UserPlus className="h-5 w-5 mr-1" />
+                                <span>Suivre</span>
+                            </>
+                        )}
                     </button>
                 </div>
                 <p className="font-bold mt-2">{title}</p>
@@ -109,7 +154,7 @@ const PostSwing = ({ post }) => {
                             className="w-full"
                             playsInline
                             preload="metadata"
-                            muted={false} // Ajouté cette ligne pour s'assurer que le son est activé
+                            muted={false}
                         >
                             <source src={photo} type="video/mp4" />
                             Votre navigateur ne supporte pas la lecture de vidéos.
@@ -127,12 +172,11 @@ const PostSwing = ({ post }) => {
                         onClick={handleLikeClick}
                     >
                         <Heart className="h-5 w-5" fill={isLiked ? "currentColor" : "none"}/>
-                        <span>{likes.length}</span>
+                        <span>{likeCount}</span>
                     </button>
-                    <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
-                        <MessageCircle className="h-5 w-5"/>
-                        <span>{comments.length}</span>
+                    <button className="flex items-center hover:text-rose-500 transition-colors">
                         <CommentSystemDemo comment={comments} id={id} />
+                        <span>{comments.length}</span>
                     </button>
                     <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
                         <Share2 className="h-5 w-5"/>
@@ -142,7 +186,6 @@ const PostSwing = ({ post }) => {
                         onClick={handleFavorisClick}
                     >
                         <Bookmark className="h-5 w-5" fill={isFavorited ? "currentColor" : "none"} />
-                        <span>{favorites.length}</span>
                     </button>
                 </div>
             </div>

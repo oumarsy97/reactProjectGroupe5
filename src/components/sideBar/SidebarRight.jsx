@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import {  TrendingUp, Coins, Gift, History, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { TrendingUp, Coins, Gift, History, ArrowLeft } from 'lucide-react';
 import useCrud from "../../hooks/useCrudAxios";
-import {useActor} from "../../context/ActorContext";
+import { useActor } from "../../context/ActorContext";
 import AlertService from "../../services/notifications/AlertService";
 import ProfileChangeForm from "../user/ProfileChangeForm";
 
 const SidebarRight = () => {
     const [showCreditHistory, setShowCreditHistory] = useState(false);
-    const [creditSection, setCreditSection] = useState('main'); // 'main', 'buy', 'code'
+    const [creditSection, setCreditSection] = useState('main');
     const [purchaseAmount, setPurchaseAmount] = useState('');
     const [purchaseCode, setPurchaseCode] = useState('');
     const { create: createCredit } = useCrud('users/achatcode');
@@ -15,11 +15,76 @@ const SidebarRight = () => {
 
     const { actor, setActor } = useActor();
     const [loading, setLoading] = useState(false);
-    const [isloading, setIsLoading] = useState(false)
+    const [isloading, setIsLoading] = useState(false);
 
+    // New state for credit history
+    const [creditHistory, setCreditHistory] = useState([]);
+    const CREDIT_RATE = 100;
 
+    useEffect(() => {
+        // Load credit history from localStorage on component mount
+        const storedHistory = localStorage.getItem(`creditHistory_${actor.id}`);
+        if (storedHistory) {
+            setCreditHistory(JSON.parse(storedHistory));
+        }
+    }, [actor.id]);
 
-    const CREDIT_RATE = 100; // 1 crédit = 100 F CFA
+    useEffect(() => {
+        const now = new Date();
+        const updatedHistory = creditHistory.filter(entry => {
+            const entryDate = new Date(entry.date);
+            const timeDiff = now - entryDate;
+            return timeDiff < 24 * 60 * 60 * 1000;
+        });
+
+        if (updatedHistory.length !== creditHistory.length) {
+            setCreditHistory(updatedHistory);
+            localStorage.setItem(`creditHistory_${actor.id}`, JSON.stringify(updatedHistory));
+        }
+    }, [creditHistory, actor.id]);
+
+    const addCreditHistoryEntry = (amount) => {
+        const newEntry = {
+            date: new Date().toISOString(),
+            type: 'Vous Avez Ajouter',
+            amount: amount,
+        };
+        const updatedHistory = [newEntry, ...creditHistory].slice(0, 50);
+        setCreditHistory(updatedHistory);
+        localStorage.setItem(`creditHistory_${actor.id}`, JSON.stringify(updatedHistory));
+    };
+
+    const handleCode = async () => {
+        if (purchaseCode.length !== 12 || purchaseCode.length === 0) {
+            await AlertService.error('Veuillez saisir un code de 12 chiffres');
+            return;
+        }
+        try {
+            setIsLoading(true);
+            const response = await addCredit({ code: purchaseCode });
+            AlertService.success('Ajout de crédits réussi!', 4000);
+            setPurchaseCode('');
+            setActor({ ...actor, credits: response.credits });
+            
+            // Add to credit history
+            addCreditHistoryEntry(response.credits - actor.credits);
+        } catch (error) {
+            await AlertService.error('Votre code est invalide');
+            setPurchaseCode('');
+        }
+        setIsLoading(false);
+    };
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    };
 
     const trends = [
         { tag: '#CoutureDurable', posts: '1.2k' },
@@ -31,12 +96,6 @@ const SidebarRight = () => {
         { name: 'Laura Mode', specialty: 'Haute Couture', avatar: '/api/placeholder/40/40' },
         { name: 'Alex Design', specialty: 'Streetwear', avatar: '/api/placeholder/40/40' },
         { name: 'Marie Fil', specialty: 'Accessoires', avatar: '/api/placeholder/40/40' }
-    ];
-
-    const creditHistory = [
-        { date: '2024-03-15', type: 'Achat', amount: 500, price: '39.99€' },
-        { date: '2024-03-10', type: 'Utilisé', amount: -100 },
-        { date: '2024-03-05', type: 'Bonus', amount: 50 }
     ];
 
     const handlePurchaseAmountChange = (e) => {
@@ -55,38 +114,36 @@ const SidebarRight = () => {
             return;
         }
         setLoading(true);
-        const response = await createCredit({ montant: +purchaseAmount });
-       // console.log(response);
-            AlertService.success('Achat réussi veuillez consulter votre email ou votre téléphone pour voir votre code ! ',4000);
-     setLoading(false);
-     setPurchaseAmount(0);
-    }
-    const handleCode = async () => {
-        if (purchaseCode.length !== 12 || purchaseCode.length === 0){
-            await AlertService.error('Veuillez saisir un code  de 12 chiffres');
-            return;
-        }
-        try {
-
-        setIsLoading(true);
-
-        const response = await addCredit({ code: purchaseCode });
-
-            AlertService.success('Ajout de crédits réussi!',4000);
-            console.log(response)
-            setPurchaseCode(0);
-           setActor({...actor, credits: response.credits} )
-        }catch (error) {
-                await AlertService.error('votre code est invalide');
-             setPurchaseCode(0);
-        }
-     setIsLoading(false);
+        await createCredit({ montant: +purchaseAmount });
+        // console.log(response);
+        AlertService.success('Achat réussi veuillez consulter votre email ou votre téléphone pour voir votre code ! ', 4000);
+        setLoading(false);
+        setPurchaseAmount(0);
     }
 
-    const handlePurchaseCodeChange =(e)=> {
+    const handlePurchaseCodeChange = (e) => {
         const value = e.target.value;
         setPurchaseCode(value);
     }
+
+    const renderCreditHistory = () => (
+        <div className="mt-4 bg-white/10 rounded-lg p-4 backdrop-blur-sm max-h-60 overflow-y-auto">
+            {creditHistory.map((transaction, index) => (
+                <div
+                    key={index}
+                    className="flex items-center justify-between py-2 border-b border-white/10 last:border-0"
+                >
+                    <div>
+                        <p className="text-sm">{transaction.type}</p>
+                        <p className="text-xs text-white/70">{formatDate(transaction.date)}</p>
+                    </div>
+                    <div className="font-bold text-green-300">
+                        +{transaction.amount}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
 
     const renderCreditSection = () => {
         switch (creditSection) {
@@ -200,6 +257,7 @@ const SidebarRight = () => {
                                 ))}
                             </div>
                         )}
+                        {showCreditHistory && renderCreditHistory()}
                     </>
                 );
         }

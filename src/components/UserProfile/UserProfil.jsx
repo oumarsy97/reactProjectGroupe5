@@ -8,6 +8,7 @@ import { useActor} from "../../context/ActorContext";
 const UserProfile = () => {
   const { login: setUser } = useAuth();
   const { user } = useAuth();
+  //console.log(user);
   const { actor } = useActor();
 
   const fadeInUp = {
@@ -22,6 +23,8 @@ const UserProfile = () => {
     animate: { scale: 1, opacity: 1 },
     transition: { type: "spring", stiffness: 300, damping: 30 }
   };
+  const [save,setSave] = useState(user.favoris.post);
+// console.log(user.favoris);
 
   const [reposts] = useState([
     {
@@ -500,6 +503,48 @@ const UserProfile = () => {
                       ))}
                     </div>
                 )}
+                {/* ... Contenu des onglets avec animations ... */}
+            {activeTab === 'saved' && (
+              <>
+                {user.favoris && user.favoris.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {user.favoris.map((fav, index) => (
+                      <motion.div
+                        key={fav.post.id}
+                        className="relative group aspect-[3/4] rounded-xl overflow-hidden shadow-lg"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <img
+                          src={fav.post.photo}
+                          alt={`Post ${fav.post.id}`}
+                          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                            <div className="flex justify-center space-x-6">
+                              <div className="flex items-center">
+                                <Heart className="w-5 h-5 mr-2" fill="white" />
+                                {/* {fav.post.likes.length} */}
+                              </div>
+                              <div className="flex items-center">
+                                <MessageCircle className="w-5 h-5 mr-2" />
+                                {/* {fav.post.comments.length} */}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-red-500">
+                    Aucun post favori trouvé.
+                  </div>
+                )}
+              </>
+            )}
               </motion.div>
             </AnimatePresence>
           </motion.div>

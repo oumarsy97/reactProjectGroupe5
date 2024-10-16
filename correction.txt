@@ -1,0 +1,9 @@
+(−4+3√2)(−4−3√2)
+
+1. Utiliser la formule (a + b)(a - b) = a² - b².
+
+2. Calculer (-4)² = 16.
+
+3. Calculer (3√2)² = 9 × 2 = 18.
+
+4. Soustraire : 16 - 18 = -2.

@@ -2,12 +2,10 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useActor } from "../../context/ActorContext";
 import { MapPin, CreditCard, User } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 const ProfileCard = () => {
     const { user } = useAuth();
     const { actor } = useActor();
-    const navigate = useNavigate();
 
     if (!user) return null;
 
@@ -20,6 +18,7 @@ const ProfileCard = () => {
                         alt="Profile"
                         className="rounded-full object-cover w-full h-full"
                     />
+                    {/* <StoryApp /> */}
                     {user.role !== 'USER' && (
                         <span className="absolute bottom-0 right-0 block h-6 w-6 rounded-full bg-green-400 border-2 border-white" title="En ligne"></span>
                     )}

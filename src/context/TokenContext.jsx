@@ -10,8 +10,12 @@ export const TokenProvider = ({ children }) => {
         return token;
     };
 
+    const setNewToken = (newToken) => {
+        setToken(newToken);
+    };
+
     return (
-        <TokenContext.Provider value={{ token, setToken, getToken }}>
+        <TokenContext.Provider value={{ token, setToken, getToken , setNewToken}}>
             {children}
         </TokenContext.Provider>
     );

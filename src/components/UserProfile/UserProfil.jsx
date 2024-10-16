@@ -358,7 +358,7 @@ const UserProfile = () => {
                     <div className="text-purple-600 text-sm">Abonnés</div>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-xl text-center hover:bg-purple-100 transition-colors">
-                    <div className="font-bold text-2xl text-purple-600">{actor.follow.length}</div>
+                    <div className="font-bold text-2xl text-purple-600">{user.follow.length}</div>
                     <div className="text-purple-600 text-sm">Abonnements</div>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-xl text-center hover:bg-purple-100 transition-colors">
@@ -366,7 +366,7 @@ const UserProfile = () => {
                       <Star className="w-5 h-5 text-yellow-400"/>
                       {user.rating}
                     </div>
-                    <div className="text-purple-600 text-sm">{user.totalReviews} avis</div>
+                    <div className="text-purple-600 text-sm">4.5K avis</div>
                   </div>
                 </motion.div>
 

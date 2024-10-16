@@ -45,7 +45,24 @@ const PostSwing = ({ post }) => {
         }
 
     };
+    //method tu add favorite post
+    const [favorites, setFavorites] = useState(post.favorites || []);
+    const [isFavorited,setIsFavorited] = useState(favorites.some(fav => fav.idUser !== currentUser.id));
+    const [favCount,setFavCount] = useState(favorites.length);
+    const { create: createFavorite } = useCrud(`posts/favoris/${id}`);
+    const handleFavorisClick = async () => {
+        const newIsFavorited =!isFavorited;
+        setIsFavorited(newIsFavorited);
 
+        const data = await createFavorite([], true);
+
+        if (data) {
+            setFavorites(prevFavorites => [...prevFavorites, data]);
+        } else {
+            setFavorites(prevFavorites => prevFavorites.filter(fav => fav.idUser!== currentUser.id));
+        }
+       
+    }
     useEffect(() => {
         if (videoRef.current) {
             videoRef.current.defaultMuted = false;
@@ -120,8 +137,12 @@ const PostSwing = ({ post }) => {
                     <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
                         <Share2 className="h-5 w-5"/>
                     </button>
-                    <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
-                        <Bookmark className="h-5 w-5"/>
+                    <button
+                        className={`flex items-center space-x-2 transition-colors ${isFavorited ? 'text-yellow-500' : 'hover:text-purple-500'}`}
+                        onClick={handleFavorisClick}
+                    >
+                        <Bookmark className="h-5 w-5" fill={isFavorited ? "currentColor" : "none"} />
+                        <span>{favorites.length}</span>
                     </button>
                 </div>
             </div>

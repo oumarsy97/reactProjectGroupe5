@@ -7,6 +7,7 @@ import AddPostModal from "../Post/RegistePost";
 import AddProduitModal from "../Produits/AddProduit";
 import ProgressiveUserSearch from "../search/ProgressiveUserSearch";
 import {useToken} from "../../context/TokenContext";
+import ChatPopup from "../chat/ChatComponent";
 
 const Navbar = () => {
     const { user, logout } = useAuth();
@@ -47,7 +48,8 @@ const Navbar = () => {
                     {actor && (user.role === "VENDOR" ? <AddProduitModal /> : <AddPostModal />)}
                     <NavItem icon={<Users size={20} />} text="Communauté" />
                     <NavItem icon={<Star size={20} />} text="Favoris" />
-                    <NavItem icon={<MessageCircle size={20} />} text="Messages" />
+
+
                     <button className="relative p-2 rounded-full hover:bg-[#0077be] hover:bg-opacity-50 transition-colors duration-200">
                         <Bell size={20} />
                         <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">

@@ -1,12 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Heart, Share2, Bookmark, UserPlus, UserCheck } from 'lucide-react';
+import { Heart, Share2, Bookmark, UserPlus, UserCheck, Repeat } from 'lucide-react';
 import { getTimeDifference } from "../../utils/tokenUtils";
 import useCrud from "../../hooks/useCrudAxios";
 import { useAuth } from "../../context/AuthContext";
 import AlertService from "../../services/notifications/AlertService";
 import CommentSystemDemo from "./PostCommentpopup";
+import Repost from "./Repost";
 
-const PostSwing = ({ post }) => {
+const PostSwing = ({ post, isRepost, repostData }) => {
     const {
         id,
         title,
@@ -15,7 +16,8 @@ const PostSwing = ({ post }) => {
         photo,
         user,
         comments,
-        tags
+        tags,
+        repostCount
     } = post;
     const { user: currentUser } = useAuth();
 
@@ -26,16 +28,12 @@ const PostSwing = ({ post }) => {
     const { create: createLike } = useCrud(`posts/like/${id}`);
     const { create: toggleFollow } = useCrud(`follows/follow/${user.id}`);
 
-
-    const [isFollowing, setIsFollowing] = useState(currentUser.follow.some( fol => fol.idActor === id)); // You might want to initialize this based on actual follow status
+    const [isFollowing, setIsFollowing] = useState(currentUser.follow.some(fol => fol.idActor === id));
+    const [localRepostCount, setLocalRepostCount] = useState(repostCount || 0);
 
     useEffect(() => {
-
-            setIsFollowing(currentUser.follow.some(fol => fol.idActor === id));
-
+        setIsFollowing(currentUser.follow.some(fol => fol.idActor === id));
     }, [currentUser, isFollowing]);
-
-
 
     const isVideo = (url) => {
         return url.includes('/video/upload/');
@@ -61,15 +59,17 @@ const PostSwing = ({ post }) => {
         setIsFollowing(newIsFollowing);
         try {
             await toggleFollow([], true);
-            // You might want to update the user object or trigger a re-fetch of user data here
             AlertService.success(newIsFollowing ? "Vous suivez maintenant cet utilisateur" : "Vous ne suivez plus cet utilisateur");
         } catch (error) {
             console.error("Error toggling follow status:", error);
-            setIsFollowing(!newIsFollowing); // Revert the state if the API call fails
+            setIsFollowing(!newIsFollowing);
             await AlertService.error("Une erreur est survenue. Veuillez réessayer.");
         }
     };
 
+    const handleRepost = () => {
+        setLocalRepostCount(prevCount => prevCount + 1);
+    };
 
     useEffect(() => {
         if (videoRef.current) {
@@ -79,6 +79,15 @@ const PostSwing = ({ post }) => {
 
     return (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            {isRepost && (
+                <div className="bg-gray-100 p-3 text-sm text-gray-600">
+                    <Repeat className="inline-block mr-2 h-4 w-4" />
+                    Reposter par {repostData.user.firstname} {repostData.user.lastname} • {getTimeDifference(repostData.createdAt)}
+                    {repostData.comment && (
+                        <p className="mt-2 font-medium">{repostData.comment}</p>
+                    )}
+                </div>
+            )}
             <div className="p-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
@@ -157,6 +166,7 @@ const PostSwing = ({ post }) => {
                         <CommentSystemDemo comment={comments} id={id} />
                         <span>{comments.length}</span>
                     </button>
+                    <Repost post={{...post, repostCount: localRepostCount}} currentUser={currentUser} onRepost={handleRepost} />
                     <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
                         <Share2 className="h-5 w-5"/>
                     </button>

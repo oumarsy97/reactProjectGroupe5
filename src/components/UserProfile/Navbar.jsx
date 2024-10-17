@@ -20,6 +20,10 @@ const Navbar = () => {
         setDarkMode(!darkMode);
         document.body.classList.toggle('dark', !darkMode);
     };
+    
+    const handleMessagesClick = () => {
+        navigate('/messages');
+    };
 
     return (
         <nav className={`shadow-md fixed w-full top-0 z-50 ${
@@ -41,7 +45,10 @@ const Navbar = () => {
                     {actor && (user.role === "VENDOR" ? <AddProduitModal /> : <AddPostModal />)}
                     <NavItem icon={<Users size={20} />} text="Communauté" />
                     <NavItem icon={<Star size={20} />} text="Favoris" />
-                    <NavItem icon={<MessageCircle size={20} />} text="Messages" />
+                    <button onClick={handleMessagesClick} className="flex items-center space-x-1">
+                    <MessageCircle size={20} />
+                    <span>Messages</span>
+                </button>
                     <button className="relative p-2 mb- rounded-full hover:bg-violet-200 hover:bg-opacity-50">
                         <Bell size={20} />
                         <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">

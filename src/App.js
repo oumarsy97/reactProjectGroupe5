@@ -8,13 +8,10 @@ import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import UserProfile from './components/UserProfile/UserProfil';
 import SewingNetwork from './components/Accueil';
-
-// Créez une instance de QueryClient
+import MessagesPage from './components/Messages/MessagesPage';
 const queryClient = new QueryClient();
 
-
 function App() {
-
     return (
         <QueryClientProvider client={queryClient}>
             <ActorProvider>
@@ -23,7 +20,6 @@ function App() {
                         <Router>
                             <Routes>
                                 <Route path="/login" element={<Login />} />
-
                                 <Route path="/profile" element={
                                     <ProtectedRoute>
                                         <UserProfile />
@@ -32,6 +28,11 @@ function App() {
                                 <Route path="/" element={
                                     <ProtectedRoute>
                                         <SewingNetwork />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/messages" element={
+                                    <ProtectedRoute>
+                                        <MessagesPage />
                                     </ProtectedRoute>
                                 } />
                             </Routes>

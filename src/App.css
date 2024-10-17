@@ -36,3 +36,31 @@
     transform: rotate(360deg);
   }
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message {
+  animation: fadeIn 0.3s ease;
+}
+
+.icon {
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.icon:hover {
+  color: #1d4ed8; /* Change la couleur au survol */
+  transform: scale(1.1); /* Ajoute un léger effet de zoom */
+}
+
+.message {
+  cursor: pointer; /* Change le curseur à pointer lors du survol */
+}

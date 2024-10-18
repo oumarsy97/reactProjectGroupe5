@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import AuthService from '../services/AuthService';
 import { useAuth } from '../context/AuthContext';
@@ -23,9 +21,6 @@ const Login = () => {
 
     const { get: getUserProfile } = useCrud('users/monprofile');
     const { get: getActorProfile } = useCrud('actors/monprofile');
-    if (isAuthenticated) {
-        navigate("/")
-    }
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -43,8 +38,7 @@ const Login = () => {
             }
         };
         checkAuth();
-        // eslint-disable-next-line no-use-before-define
-    }, [getToken]);
+    }, [getToken, isAuthenticated]);
 
     const loadUserData = async (token) => {
         try {
@@ -67,17 +61,24 @@ const Login = () => {
             if (isLoginMode) {
                 const data = await AuthService.login(credentials.email, credentials.password);
                 setToken(data.token);
+                // Attendre que le token soit correctement stocké
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 await loadUserData(data.token);
                 setIsAuthenticated(true);
                 navigate('/');
                 AlertService.success("Connexion réussie");
             } else {
-                // Logique d'inscription (le composant Signup prend en charge cela)
+                // Logique d'inscription si nécessaire
             }
         } catch (err) {
-            setError("Une erreur est survenue. Veuillez réessayer.");
+            if (err.response && err.response.status === 401) {
+                setError("Email ou mot de passe incorrect");
+            } else {
+                setError("Une erreur est survenue. Veuillez réessayer.");
+            }
+            AlertService.error(error);
         } finally {
-            // setLoading(false);
+            setLoading(false);
         }
     };
 

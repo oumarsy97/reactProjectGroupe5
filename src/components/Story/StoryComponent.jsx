@@ -286,7 +286,7 @@ const StoryApp = () => {
 
     return (
         <div className="bg-gray-100">
-            <div className="w-full rounded-2xl bg-gradient-to-r from-violet-400 to-gray-800 text-white p-4 overflow-y-auto">
+            <div className="w-full bg-purple-50 text-black rounded-2xl border-1 border-[purple] shadow-lg shadow-purple-400 from-violet-400 to-gray-800  p-4 overflow-y-auto">
                 <h2 className="text-2xl font-bold mb-6">Statut</h2>
                 <div className="flex gap-4 overflow-x-auto pb-4">
                     <div
@@ -318,7 +318,7 @@ const StoryApp = () => {
                         )}
                     </div>
                     {followedStories.length === 0 ? (
-                        <p className="text-center text-gray-400 self-center">
+                        <p className="text-center text-gray-500 self-center">
                             No stories available
                         </p>
                     ) : (

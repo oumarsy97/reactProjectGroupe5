@@ -8,7 +8,6 @@ import { useActor} from "../../context/ActorContext";
 const UserProfile = () => {
   const { login: setUser } = useAuth();
   const { user } = useAuth();
-  //console.log(user);
   const { actor } = useActor();
 
   const fadeInUp = {
@@ -24,7 +23,7 @@ const UserProfile = () => {
     transition: { type: "spring", stiffness: 300, damping: 30 }
   };
   const [save,setSave] = useState(user.favoris.post);
-// console.log(user.favoris);
+
 
   const [reposts] = useState([
     {
@@ -51,12 +50,15 @@ const UserProfile = () => {
   const [activeTab, setActiveTab] = useState('produits');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [nbreVote, setNbreVote] = useState(actor.posts.reduce((acc, post) => acc + post.notes.length, 0));
+  const [nbreLike, setNbreLike] = useState(actor.posts.reduce((sum, post) => sum + post.likes.length, 0));
 
   const notifications = [
     { id: 1, message: 'Nouveau message de Marie', time: 'Il y a 5min' },
     { id: 2, message: 'Pierre a aimé votre publication', time: 'Il y a 1h' },
     { id: 3, message: 'Nouvelle commande reçue', time: 'Il y a 2h' },
   ];
+
 
   const [posts] = useState([
     { id: 1, image: '/api/placeholder/300/400', likes: 234, comments: 45 },
@@ -364,16 +366,16 @@ const UserProfile = () => {
                     <div className="font-bold text-2xl text-purple-600">{user.follow.length}</div>
                     <div className="text-purple-600 text-sm">Abonnements</div>
                   </div>
-                  <div className="bg-purple-50 p-4 rounded-xl text-center hover:bg-purple-100 transition-colors">
-                    <div className="font-bold text-2xl text-purple-600">{actor.follow.length}</div>
+                  {user.role === 'TAILOR' && (<div className="bg-purple-50 p-4 rounded-xl text-center hover:bg-purple-100 transition-colors">
+                    <div className="font-bold text-2xl text-purple-600">{nbreLike}</div>
                     <div className="text-purple-600 text-sm">Likes</div>
-                  </div>
+                  </div>)}
                   <div className="bg-purple-50 p-4 rounded-xl text-center hover:bg-purple-100 transition-colors">
                     <div className="font-bold text-2xl text-purple-600 flex items-center justify-center gap-1">
                       <Star className="w-5 h-5 text-yellow-400"/>
-                      {user.rating}
+                      {actor.votes/nbreVote}
                     </div>
-                    <div className="text-purple-600 text-sm">{user.totalReviews} avis</div>
+                    <div className="text-purple-600 text-sm">{nbreVote} avis</div>
                   </div>
                 </motion.div>
 

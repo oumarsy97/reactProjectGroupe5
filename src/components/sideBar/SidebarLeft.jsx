@@ -1,12 +1,18 @@
-import React from 'react';
-import { Users, Scissors, Eye,ShoppingBag } from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, Scissors, Eye, ShoppingBag } from 'lucide-react';
 import ProfileCard from "../UserProfile/ProfilCard";
 import { useAuth } from '../../context/AuthContext';
 import { useActor } from "../../context/ActorContext";
 import { useNavigate } from 'react-router-dom';
+import FollowersPopup from './FollowersPopup'; // Assurez-vous que ce composant est créé
 
-const StatsCard = ({ icon: Icon, title, value }) => (
-    <div className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-violet-50 transition-colors duration-300">
+const StatsCard = ({ icon: Icon, title, value, onClick, isClickable = false }) => (
+    <div 
+        className={`flex items-center p-3 bg-gray-50 rounded-lg transition-colors duration-300 ${
+            isClickable ? 'hover:bg-violet-50 cursor-pointer' : ''
+        }`}
+        onClick={isClickable ? onClick : undefined}
+    >
         <div className="mr-4 bg-violet-100 p-2 rounded-full">
             <Icon className="w-5 h-5 text-violet-600" />
         </div>
@@ -21,20 +27,43 @@ const SidebarLeft = () => {
     const { user } = useAuth();
     const { actor } = useActor();
     const navigate = useNavigate();
+    const [showFollowersPopup, setShowFollowersPopup] = useState(false);
+    const [showFollowingPopup, setShowFollowingPopup] = useState(false);
+    const [activeTab, setActiveTab] = useState('');
+
     if (!user) return null;
 
+    const handleOpenPopup = (tab) => {
+        setActiveTab(tab);
+        if (tab === 'followers') {
+            setShowFollowersPopup(true);
+        } else if (tab === 'following') {
+            setShowFollowingPopup(true);
+        }
+    };
 
     return (
         <div className="col-span-3">
             <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24 border border-gray-200">
                 <ProfileCard />
                 <div className="mt-6 space-y-4">
-                    <StatsCard icon={Users} title="Abonnés" value={actor?.follow?.length || 0} />
-                    <StatsCard icon={Eye} title="Suivi(e)s" value={user?.follow?.length || 0} />
+                    <StatsCard 
+                        icon={Users} 
+                        title="Abonnés" 
+                        value={actor?.follow?.length || 0} 
+                        onClick={() => handleOpenPopup('followers')}
+                        isClickable={true}
+                    />
+                    <StatsCard 
+                        icon={Eye} 
+                        title="Suivi(e)s" 
+                        value={user?.follow?.length || 0} 
+                        onClick={() => handleOpenPopup('following')}
+                        isClickable={true}
+                    />
                     {user?.role === 'TAILOR' && (
                         <StatsCard icon={Scissors} title="Mes Créations" value={actor?.posts?.length || 0} />
                     )}
-
                     {user?.role === 'VENDOR' && (
                         <StatsCard
                             icon={ShoppingBag}
@@ -49,8 +78,19 @@ const SidebarLeft = () => {
                 >
                     Voir mon profil
                 </button>
-
             </div>
+            {showFollowersPopup && (
+                <FollowersPopup
+                    onClose={() => setShowFollowersPopup(false)}
+                    initialTab="followers"
+                />
+            )}
+            {showFollowingPopup && (
+                <FollowersPopup
+                    onClose={() => setShowFollowingPopup(false)}
+                    initialTab="following"
+                />
+            )}
         </div>
     );
 };

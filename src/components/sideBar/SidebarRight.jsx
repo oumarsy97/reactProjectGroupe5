@@ -4,6 +4,7 @@ import useCrud from "../../hooks/useCrudAxios";
 import { useActor } from "../../context/ActorContext";
 import AlertService from "../../services/notifications/AlertService";
 import ProfileChangeForm from "../user/ProfileChangeForm";
+import FollowersPopup from './FollowersPopup';
 
 const SidebarRight = () => {
     const [showCreditHistory, setShowCreditHistory] = useState(false);
@@ -65,7 +66,7 @@ const SidebarRight = () => {
             AlertService.success('Ajout de crédits réussi!', 4000);
             setPurchaseCode('');
             setActor({ ...actor, credits: response.credits });
-            
+
             // Add to credit history
             addCreditHistoryEntry(response.credits - actor.credits);
         } catch (error) {
@@ -77,8 +78,8 @@ const SidebarRight = () => {
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleString('fr-FR', { 
-            hour: '2-digit', 
+        return date.toLocaleString('fr-FR', {
+            hour: '2-digit',
             minute: '2-digit',
             day: '2-digit',
             month: '2-digit',
@@ -95,6 +96,7 @@ const SidebarRight = () => {
     const creators = [
         { name: 'Laura Mode', specialty: 'Haute Couture', avatar: '/api/placeholder/40/40' },
         { name: 'Alex Design', specialty: 'Streetwear', avatar: '/api/placeholder/40/40' },
+        { name: 'Marie Fil', specialty: 'Accessoires', avatar: '/api/placeholder/40/40' },
         { name: 'Marie Fil', specialty: 'Accessoires', avatar: '/api/placeholder/40/40' }
     ];
 
@@ -263,9 +265,59 @@ const SidebarRight = () => {
         }
     };
 
+    const CreatorsToFollow = ({ creators }) => {
+        const [showPopup, setShowPopup] = useState(false);
+
+        // Limiter l'affichage à 3 créateurs
+        const displayedCreators = creators.slice(0, 2);
+
+        return (
+            <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="font-serif text-lg font-semibold mb-4">Créateurs à suivre</h3>
+                {displayedCreators.map((creator) => (
+                    <div
+                        key={creator.name}
+                        className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
+                    >
+                        <div className="flex items-center">
+                            <img
+                                src={creator.avatar}
+                                alt={creator.name}
+                                className="h-10 w-10 rounded-full bg-gray-200 object-cover"
+                            />
+                            <div className="ml-3">
+                                <p className="font-medium text-gray-900">{creator.name}</p>
+                                <p className="text-sm text-gray-500">{creator.specialty}</p>
+                            </div>
+                        </div>
+                        <button
+                            className="px-4 py-1 text-white text-sm font-medium rounded-full bg-gradient-to-br from-black to-purple-900 hover:opacity-90 transition-opacity duration-200"
+                        >
+                            Suivre
+                        </button>
+                    </div>
+                ))}
+                {creators.length > 2 && (
+                    <button
+                        onClick={() => setShowPopup(true)}
+                        className="mt-4 w-full px-4 py-2 text-purple-600 text-sm font-medium rounded-full border border-purple-600 hover:bg-purple-50 transition-colors duration-200"
+                    >
+                        Voir plus
+                    </button>
+                )}
+                {showPopup && (
+                    <FollowersPopup
+                        onClose={() => setShowPopup(false)}
+                        initialTab="suggested"
+                    />
+                )}
+            </div>
+        );
+    };
+
     return (
         <div className="col-span-3">
-            <div className="space-y-6 sticky top-24">
+            <div className="space-y-4 fixed top-24">
                 {/* Section Crédits */}
                 <div className="bg-gradient-to-b from-black to-purple-900 rounded-xl shadow-lg p-6 text-white">
                     {actor && renderCreditSection()}
@@ -290,32 +342,7 @@ const SidebarRight = () => {
                 </div>
 
                 {/* Suggestions */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                    <h3 className="font-serif text-lg font-semibold mb-4">Créateurs à suivre</h3>
-                    {creators.map((creator) => (
-                        <div
-                            key={creator.name}
-                            className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
-                        >
-                            <div className="flex items-center">
-                                <img
-                                    src={creator.avatar}
-                                    alt={creator.name}
-                                    className="h-10 w-10 rounded-full bg-gray-200 object-cover"
-                                />
-                                <div className="ml-3">
-                                    <p className="font-medium text-gray-900">{creator.name}</p>
-                                    <p className="text-sm text-gray-500">{creator.specialty}</p>
-                                </div>
-                            </div>
-                            <button
-                                className="px-4 py-1 text-white text-sm font-medium rounded-full bg-gradient-to-br from-black to-purple-900 hover:opacity-90 transition-opacity duration-200"
-                            >
-                                Suivre
-                            </button>
-                        </div>
-                    ))}
-                </div>
+                <CreatorsToFollow creators={creators} />
             </div>
         </div>
     );

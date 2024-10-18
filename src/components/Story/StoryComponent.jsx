@@ -159,9 +159,9 @@ const StoryApp = () => {
     const crudStoryMyStories = useCrud("story/mystories");
     const crudStoryFollowed = useCrud("story/storyfollowed");
     const crudStoryPost = useCrud("story/create");
-    const crudStoryDelete = useCrud("story/delete");
-    const crudStoryView = useCrud("story/view");
-    const crudStoryViews = useCrud("story/views");
+    const crudStoryDelete = useCrud("story//delete/:idStory");
+    const crudStoryView = useCrud("story/view/:idStory");
+    const crudStoryViews = useCrud("story/views/:idStory");
 
     const {
         data: myStories = [],

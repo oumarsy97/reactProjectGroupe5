@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "react-query";
 import { useAuth } from "../../context/AuthContext";
 import { TrashIcon, EyeIcon } from '@heroicons/react/solid';
 
-const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, deleteStory, viewStory,}) => 
+const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, deleteStory, viewStory,}) =>
 {
     const [currentStoryIndex, setCurrentStoryIndex] = useState(initialStoryIndex);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -103,7 +103,7 @@ const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, delet
                             alt="Story"
                             className="max-w-full h-full"
                         />
-                        <div className="absolute bottom-16 left-4 right-4 bg-black bg-opacity-50 p-4 rounded">
+                        <div className="absolute bottom-16 left-4 right-4 p-4 rounded">
                             <p className="text-white text-center">
                                 {currentStory.messages[currentImageIndex]}
                             </p>
@@ -289,7 +289,7 @@ const StoryApp = () => {
             <div className="w-full rounded-2xl bg-gradient-to-r from-violet-400 to-gray-800 text-white p-4 overflow-y-auto">
                 <h2 className="text-2xl font-bold mb-6">Statut</h2>
                 <div className="flex gap-4 overflow-x-auto pb-4">
-                    <div 
+                    <div
                         className="flex flex-col items-center cursor-pointer"
                         onClick={() => openStory(0)}
                     >

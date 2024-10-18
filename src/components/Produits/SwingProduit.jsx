@@ -46,18 +46,16 @@ const SwingProduit = ({ produit }) => {
             </div>
 
             <div className="media-container">
-                <img src={image} alt={libelle} className="w-full h-64 object-cover" />
+                <img src={image} alt={libelle} className="w-full h-full object-cover" />
             </div>
 
             <div className="p-6 border-t border-gray-100">
                 <div className="flex justify-between text-gray-600">
                     <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
                         <Heart className="h-5 w-5" />
-
                     </button>
                     <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
                         <MessageCircle className="h-5 w-5" />
-
                     </button>
                     <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
                         <Share2 className="h-5 w-5" />

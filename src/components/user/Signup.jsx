@@ -55,19 +55,19 @@ const Signup = () => {
         try {
             let data ;
             if (formData.role === 'CLIENT') {
-             //   data = await createUser(formPayload);  // Send as FormData
-               data = await createUser(formPayload, true);
-               console.log(data);
+                //   data = await createUser(formPayload);  // Send as FormData
+                data = await createUser(formPayload, true);
+                console.log(data);
 
             } else {
-           //  data = await createActor(formPayload);
+                //  data = await createActor(formPayload);
                 data = await createActor(formPayload, true);
 
             }
-           // setToken(data.token);
+            // setToken(data.token);
             await AlertService.success('Inscription réussie!');
-           // navigate('/home');
-           // navigate('/home');
+            // navigate('/home');
+            // navigate('/home');
         } catch (err) {
             await AlertService.error(err.message);
         } finally {
@@ -232,7 +232,7 @@ const Signup = () => {
                         alt="ciseau"
                         className="absolute left-0 top-0 h-full object-cover transform -translate-x-1/2"
                     />
-                    <img 
+                    <img
                         src='./images/logoo.png'
                         alt="Logo"
                         className="absolute top-1/2 left-1/2 transform -translate-x-1/5 -translate-y-2/3 w-48"

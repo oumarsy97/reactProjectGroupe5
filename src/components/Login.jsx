@@ -82,12 +82,12 @@ const Login = () => {
     };
 
     const handleLogout = () => {
+        AlertService.success("Déconnexion réussie");
         clearToken();
         clearUser();
         clearActor();
         setIsAuthenticated(false);
         navigate('/login');
-        AlertService.success("Déconnexion réussie");
     };
     return (
         <>

@@ -1,8 +1,6 @@
-
 {
   "name": "react_tp3",
   "version": "0.1.0",
-
   "private": true,
   "dependencies": {
     "@headlessui/react": "^2.1.9",

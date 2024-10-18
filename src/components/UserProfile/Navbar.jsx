@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Scissors, Users,User,Settings, Star, MessageCircle, Bell, ChevronDown, LogOut } from 'lucide-react';
+import { Scissors, Users,User,Settings, Star, ShoppingCart, MessageCircle, Bell, ChevronDown, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useActor } from "../../context/ActorContext";
@@ -48,6 +48,8 @@ const Navbar = () => {
                     {actor && (user.role === "VENDOR" ? <AddProduitModal /> : <AddPostModal />)}
                     <NavItem icon={<Users size={20} />} text="Communauté" />
                     <NavItem icon={<Star size={20} />} text="Favoris" />
+                    <NavItem icon={<MessageCircle size={20} />} text="Messages" />
+                    <NavItem icon={<ShoppingCart size={20} />} text="Achats" />
 
 
                     <button className="relative p-2 rounded-full hover:bg-[#0077be] hover:bg-opacity-50 transition-colors duration-200">
@@ -119,7 +121,7 @@ const Navbar = () => {
 };
 
 const NavItem = ({ icon, text }) => (
-    <button className="flex items-center space-x-1 p-2 rounded-full hover:bg-[#0077be] hover:bg-opacity-50 transition-colors duration-200">
+    <button className="flex flex-col items-center space-x-1 p-2 rounded-full hover:bg-[#0077be] hover:bg-opacity-50 transition-colors duration-200">
         {icon}
         <span className="hidden md:inline text-sm">{text}</span>
     </button>

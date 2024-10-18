@@ -22,6 +22,8 @@ const UserProfile = () => {
     animate: { scale: 1, opacity: 1 },
     transition: { type: "spring", stiffness: 300, damping: 30 }
   };
+  const [save,setSave] = useState(user.favoris.post);
+
 
   const [reposts] = useState([
     {
@@ -48,12 +50,15 @@ const UserProfile = () => {
   const [activeTab, setActiveTab] = useState('produits');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [nbreVote, setNbreVote] = useState(actor.posts.reduce((acc, post) => acc + post.notes.length, 0));
+  const [nbreLike, setNbreLike] = useState(actor.posts.reduce((sum, post) => sum + post.likes.length, 0));
 
   const notifications = [
     { id: 1, message: 'Nouveau message de Marie', time: 'Il y a 5min' },
     { id: 2, message: 'Pierre a aimé votre publication', time: 'Il y a 1h' },
     { id: 3, message: 'Nouvelle commande reçue', time: 'Il y a 2h' },
   ];
+
 
   const [posts] = useState([
     { id: 1, image: '/api/placeholder/300/400', likes: 234, comments: 45 },
@@ -349,7 +354,7 @@ const UserProfile = () => {
                 </motion.div>
 
                 <motion.div
-                    className="grid grid-cols-3 gap-6 mb-6"
+                    className="grid grid-cols-4 gap-6 mb-6"
                     {...fadeInUp}
                     transition={{delay: 0.1}}
                 >
@@ -358,15 +363,19 @@ const UserProfile = () => {
                     <div className="text-purple-600 text-sm">Abonnés</div>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-xl text-center hover:bg-purple-100 transition-colors">
-                    <div className="font-bold text-2xl text-purple-600">{actor.follow.length}</div>
+                    <div className="font-bold text-2xl text-purple-600">{user.follow.length}</div>
                     <div className="text-purple-600 text-sm">Abonnements</div>
                   </div>
+                  {user.role === 'TAILOR' && (<div className="bg-purple-50 p-4 rounded-xl text-center hover:bg-purple-100 transition-colors">
+                    <div className="font-bold text-2xl text-purple-600">{nbreLike}</div>
+                    <div className="text-purple-600 text-sm">Likes</div>
+                  </div>)}
                   <div className="bg-purple-50 p-4 rounded-xl text-center hover:bg-purple-100 transition-colors">
                     <div className="font-bold text-2xl text-purple-600 flex items-center justify-center gap-1">
                       <Star className="w-5 h-5 text-yellow-400"/>
-                      {user.rating}
+                      {actor.votes/nbreVote}
                     </div>
-                    <div className="text-purple-600 text-sm">{user.totalReviews} avis</div>
+                    <div className="text-purple-600 text-sm">{nbreVote} avis</div>
                   </div>
                 </motion.div>
 
@@ -423,23 +432,23 @@ const UserProfile = () => {
                   </motion.button>
               ))}
 
-        </div>
+            </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-              key={activeTab}
-              initial={{opacity: 0, y: 20}}
-              animate={{opacity: 1, y: 0}}
-              exit={{opacity: 0, y: -20}}
-              transition={{duration: 0.3}}
-          >
-            {/* ... Contenu des onglets avec animations ... */}
-            {activeTab === 'produits' && (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {actor.posts.map((post, index) => (
-                      <motion.div
-                          key={post.id}
-                          className="relative group aspect-[3/4] rounded-xl overflow-hidden shadow-lg"
+            <AnimatePresence mode="wait">
+              <motion.div
+                  key={activeTab}
+                  initial={{opacity: 0, y: 20}}
+                  animate={{opacity: 1, y: 0}}
+                  exit={{opacity: 0, y: -20}}
+                  transition={{duration: 0.3}}
+              >
+                {/* ... Contenu des onglets avec animations ... */}
+                {activeTab === 'produits' && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                      {actor.posts.map((post, index) => (
+                          <motion.div
+                              key={post.id}
+                              className="relative group aspect-[3/4] rounded-xl overflow-hidden shadow-lg"
                               initial={{ opacity: 0, scale: 0.8 }}
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ delay: index * 0.1 }}
@@ -499,6 +508,46 @@ const UserProfile = () => {
                           </motion.div>
                       ))}
                     </div>
+                )}
+                {/* ... Contenu des onglets avec animations ... */}
+                {activeTab === 'saved' && (
+                    <>
+                      {user.favoris && user.favoris.length > 0 ? (
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            {user.favoris.map((fav, index) => (
+                                <motion.div
+                                    key={fav.post.id}
+                                    className="relative group aspect-[3/4] rounded-xl overflow-hidden shadow-lg"
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: index * 0.1 }}
+                                >
+                                  <img
+                                      src={fav.post.photo}
+                                      alt={`Post ${fav.post.id}`}
+                                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                  />
+                                  <div className="absolute inset- bg-black bg-opacity-50 p-4 rounded0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                                      <div className="flex justify-center space-x-6">
+                                        <div className="flex items-center">
+                                        </div>
+                                        <div className="flex items-center">
+                                          <MessageCircle className="w-5 h-5 mr-2" />
+                                          {/* {fav.post.comments.length} */}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                            ))}
+                          </div>
+                      ) : (
+                          <div className="text-center text-red-500">
+                            Aucun post favori trouvé.
+                          </div>
+                      )}
+                    </>
                 )}
               </motion.div>
             </AnimatePresence>

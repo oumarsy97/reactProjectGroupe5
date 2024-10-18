@@ -1,49 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import useCrud from "../../hooks/useCrudAxios";
+import { useQuery, useQueryClient } from "react-query";
+import { useAuth } from "../../context/AuthContext";
+import { TrashIcon, EyeIcon } from '@heroicons/react/solid';
 
-const storiesData = [
-    {
-        userName: "Jennifer",
-        userImage: "ousseynouODC.jpeg",
-        photo: [
-            "download6.jpg",
-            "WhatsApp Image 2024-04-29 at 15.39.20.jpeg",
-            "images.jpeg",
-        ],
-        messages: ["Beautiful day!", "Having fun!", "Perfect moment"],
-        views: 10,
-        isRead: false,
-    },
-    {
-        userName: "Michael Stone",
-        userImage: "ousseynouODC.jpeg",
-        photo: [
-            "images.jpeg",
-            "WhatsApp Image 2024-04-29 at 15.40.54.jpeg",
-            "WhatsApp Image 2024-04-29 at 15.38.36.jpeg",
-        ],
-        messages: ["At work!", "Coffee time", "Weekend vibes"],
-        views: 15,
-        isRead: false,
-    },
-];
-
-const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead }) => {
+const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, deleteStory, viewStory,}) =>
+{
     const [currentStoryIndex, setCurrentStoryIndex] = useState(initialStoryIndex);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [progress, setProgress] = useState(0);
-    const crudStory = useCrud( 'story/storyfollowed');
-
-
-
+    const { user } = useAuth();
 
     useEffect(() => {
-
-
-
         const timer = setInterval(() => {
             if (progress < 100) {
-                setProgress(prev => prev + 1);
+                setProgress((prev) => prev + 1);
             } else {
                 handleNext();
             }
@@ -52,14 +23,22 @@ const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead }) => 
         return () => clearInterval(timer);
     }, [progress]);
 
+    useEffect(() => {
+        // Mark story as viewed when it's displayed
+        const currentStory = stories[currentStoryIndex];
+        if (currentStory && currentStory.actorId !== user?.id) {
+            viewStory(currentStory.id);
+        }
+    }, [currentStoryIndex, stories]);
+
     const handleNext = () => {
         const currentStory = stories[currentStoryIndex];
         if (currentImageIndex < currentStory.photo.length - 1) {
-            setCurrentImageIndex(prev => prev + 1);
+            setCurrentImageIndex((prev) => prev + 1);
             setProgress(0);
         } else if (currentStoryIndex < stories.length - 1) {
             markAsRead(currentStory);
-            setCurrentStoryIndex(prev => prev + 1);
+            setCurrentStoryIndex((prev) => prev + 1);
             setCurrentImageIndex(0);
             setProgress(0);
         } else {
@@ -70,10 +49,10 @@ const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead }) => 
 
     const handlePrev = () => {
         if (currentImageIndex > 0) {
-            setCurrentImageIndex(prev => prev - 1);
+            setCurrentImageIndex((prev) => prev - 1);
             setProgress(0);
         } else if (currentStoryIndex > 0) {
-            setCurrentStoryIndex(prev => prev - 1);
+            setCurrentStoryIndex((prev) => prev - 1);
             setCurrentImageIndex(stories[currentStoryIndex - 1].photo.length - 1);
             setProgress(0);
         }
@@ -82,76 +61,91 @@ const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead }) => 
     const currentStory = stories[currentStoryIndex];
 
     return (
-        <div className="fixed inset-0  bg-black bg-opacity-75 flex items-center justify-center z-50">
-            <div className="relative w-full  max-w-3xl h-full bg-gradient-to-b from-black to-purple-900 rounded-2lg overflow-hidden">
-
-                {/* Image de fond floue */}
+        <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+            <div className="relative w-full h-full overflow-hidden">
                 <div
-                    className="absolute inset-0 bg-cover bg-center blur-xl"
-                    style={{ backgroundImage: `url(${currentStory.photo[currentImageIndex]})` }}
+                    className="absolute inset-0 bg-cover bg-center blur-md"
+                    style={{
+                        backgroundImage: `url(${currentStory.photo[currentImageIndex]})`,
+                    }}
                 ></div>
-
-                {/* Conteneur principal pour le contenu centré */}
-                <div className="relative z-10 flex flex-col items-center justify-center h-full px-10">
-
-                    {/* Barre de progression des images */}
-                    <div className="w-4/5 flex p-2 absolute top-2">
-                        {currentStory.photo.map((_, index) => (
-                            <div key={index} className="flex-1 h-1 bg-gray-600 mx-1">
-                                <div
-                                    className="h-full bg-white"
-                                    style={{
-                                        width: index === currentImageIndex ? `${progress}%` : index < currentImageIndex ? '100%' : '0%',
-                                    }}
-                                ></div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Image claire centrée */}
-                    <img
-                        src={currentStory.photo[currentImageIndex]}
-                        alt="Story"
-                        className="rounded-lgmax-w-full h-full"
-                    />
-
-                    {/* Information utilisateur */}
-                    <div className="absolute top-8 left-20 flex items-center">
+                <div className="relative z-10 flex flex-col items-center justify-center h-full">
+                    <div className="relative w-1/2 h-full flex items-center justify-center">
+                        <div className="absolute top-4 left-0 right-0 flex px-4">
+                            {currentStory.photo.map((_, index) => (
+                                <div key={index} className="flex-1 h-1 bg-gray-600 mx-0.5">
+                                    <div
+                                        className="h-full bg-white"
+                                        style={{
+                                            width:
+                                                index === currentImageIndex
+                                                    ? `${progress}%`
+                                                    : index < currentImageIndex
+                                                        ? "100%"
+                                                        : "0%",
+                                        }}
+                                    ></div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="absolute top-8 left-4 flex items-center">
+                            <img
+                                src={currentStory.userImage}
+                                alt={currentStory.userName}
+                                className="w-10 h-10 rounded-full mr-2 border-2 border-white"
+                            />
+                            <span className="text-white font-semibold">
+                                {currentStory.userName}
+                            </span>
+                        </div>
                         <img
-                            src={currentStory.photo}
-                            alt={currentStory.userName}
-                            className={`w-10 h-10 rounded-full mr-2 border-2 ${currentStory.isRead ? 'border-gray-400' : 'border-teal-500'}`}
+                            src={currentStory.photo[currentImageIndex]}
+                            alt="Story"
+                            className="max-w-full h-full"
                         />
-                        <span className="text-white font-semibold">{currentStory.userName}</span>
+                        <div className="absolute bottom-16 left-4 right-4 p-4 rounded">
+                            <p className="text-white text-center">
+                                {currentStory.messages[currentImageIndex]}
+                            </p>
+                        </div>
+                        {currentStory.actorId === user?.id && (
+                            <div className="absolute bottom-4 left-4 right-4 flex justify-center">
+                                <button
+                                    onClick={() => deleteStory(currentStory.id)}
+                                    className="bg-red-500 text-white px-3 py-1 rounded-full text-sm mr-2 flex items-center"
+                                >
+                                    <TrashIcon className="w-4 h-4 mr-1" />
+                                    Delete
+                                </button>
+                                <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
+                                    <EyeIcon className="w-4 h-4 mr-1" />
+                                    {currentStory.vues} views
+                                </div>
+                            </div>
+                        )}
                     </div>
-
-                    {/* Texte et vues de l'image */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-4 text-center">
-                        <p className="text-white">{currentStory.messages[currentImageIndex]}</p>
-                        <input type='text' className='bg-opacity-40 bg-black w-full p-2 mt-2 rounded text-white'/>
-                    </div>
-
                 </div>
-
-                {/* Boutons de navigation */}
-                <button onClick={closeStory} className="absolute top-4 right-4 text-white text-2xl z-10">&times;</button>
+                <button
+                    onClick={closeStory}
+                    className="absolute top-4 right-4 text-white text-2xl z-20"
+                >
+                    &times;
+                </button>
                 <button
                     onClick={handlePrev}
-                    className="absolute top-1/2 left-4 text-white text-4xl transform -translate-y-1/2 opacity-50 hover:opacity-100 z-10"
+                    className="absolute top-1/2 left-4 text-white text-4xl transform -translate-y-1/2 opacity-50 hover:opacity-100 z-20"
                 >
                     &lt;
                 </button>
                 <button
                     onClick={handleNext}
-                    className="absolute top-1/2 right-4 text-white text-4xl transform -translate-y-1/2 opacity-50 hover:opacity-100 z-10"
+                    className="absolute top-1/2 right-4 text-white text-4xl transform -translate-y-1/2 opacity-50 hover:opacity-100 z-20"
                 >
                     &gt;
                 </button>
-
             </div>
         </div>
     );
-
 };
 
 const StoryApp = () => {
@@ -160,55 +154,77 @@ const StoryApp = () => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [storyMessage, setStoryMessage] = useState("");
     const fileInputRef = useRef(null);
-    const [stories, setStories] = useState(storiesData);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const crudStory = useCrud( 'story/mystories');
+    const { user } = useAuth();
+    const queryClient = useQueryClient();
+    const crudStoryMyStories = useCrud("story/mystories");
+    const crudStoryFollowed = useCrud("story/storyfollowed");
+    const crudStoryPost = useCrud("story/create");
+    const crudStoryDelete = useCrud("story/delete");
+    const crudStoryView = useCrud("story/view");
+    const crudStoryViews = useCrud("story/views");
+
+    const {
+        data: myStories = [],
+        isLoading: isLoadingMyStories,
+        error: myStoriesError
+    } = useQuery("myStories", async () => {
+        const fetchedStories = await crudStoryMyStories.get();
+        return groupStories(fetchedStories);
+    });
+    const {
+        data: followedStories = [],
+        isLoading: isLoadingFollowedStories,
+        error: followedStoriesError
+    } = useQuery("storyfollowed", async () => {
+        const fetchedStories = await crudStoryFollowed.get();
+        return groupStories(fetchedStories);
+    });
 
     useEffect(() => {
-        const fetchStories = async () => {
-            try {
-                const fetchedStories = await crudStory.get();
+        if (followedStoriesError) {
+            console.error("Error fetching followed stories:", followedStoriesError);
+        }
+    }, [followedStoriesError]);
 
-                // Créer un objet pour regrouper les stories par actorId
-                const groupedStories = fetchedStories.reduce((acc, story) => {
-                    const actorId = story.actor.id;
-                    if (!acc[actorId]) {
-                        acc[actorId] = {
-                            actorId: actorId,
-                            userName: story.actor.user.firstname + ' ' +  story.actor.user.lastname,
-                            userImage: story.actor.user.photo,
-                            photo: [],
-                            messages: [],
-                            views: story.vues,
-                            isRead: false
-                        };
-                    }
-                    acc[actorId].photo.push(story.photo);
-                    acc[actorId].messages.push(story.description || ''); // Utilisez une chaîne vide si description est null
-                    return acc;
-                }, {});
+    const groupStories = (stories) => {
+        if (!Array.isArray(stories)) {
+            console.error("Expected an array of stories, but received:", stories);
+            return [];
+        }
 
-                // Convertir l'objet groupé en tableau
-                const processedStories = Object.values(groupedStories);
-
-                setStories(processedStories);
-                setIsLoading(false);
-            } catch (err) {
-                setError('Erreur lors du chargement des stories');
-                setIsLoading(false);
+        const grouped = stories.reduce((acc, story) => {
+            const actorId = story.idActory;
+            if (!acc[actorId]) {
+                acc[actorId] = {
+                    id: story.id,
+                    actorId,
+                    userName: story.actor?.user ? `${story.actor.user.firstname} ${story.actor.user.lastname}` : "Unknown User",
+                    userImage: story.actor?.user?.photo || "/default-avatar.png",
+                    photo: [],
+                    messages: [],
+                    vues: story.vues || 0,
+                    isRead: false,
+                };
             }
+            acc[actorId].photo.push(story.photo);
+            acc[actorId].messages.push(story.description || "");
+            acc[actorId].vues = Math.max(acc[actorId].vues, story.vues || 0);
+            return acc;
+        }, {});
 
-        };
-        fetchStories();
-    }, []);
+        return Object.values(grouped);
+    };
 
-
-        const openStory = (index) => setActiveStoryIndex(index);
+    const openStory = (index) => setActiveStoryIndex(index);
     const closeStory = () => setActiveStoryIndex(null);
 
-    const markAsRead = (story) => {
-        setStories(prevStories => prevStories.map(s => s === story ? { ...s, isRead: true } : s));
+    const markAsRead = async (story) => {
+        try {
+            await crudStoryView.create({ storyId: story.id });
+            queryClient.invalidateQueries("storyfollowed");
+        } catch (error) {
+            console.error("Error marking story as read:", error);
+        }
     };
 
     const addNewStory = () => {
@@ -217,56 +233,123 @@ const StoryApp = () => {
 
     const handleFileSelect = (event) => {
         const files = Array.from(event.target.files);
-        setSelectedFiles(files.map(file => URL.createObjectURL(file)));
+        setSelectedFiles(files);
         setIsNewStoryModalOpen(true);
     };
 
-    const handleStorySubmit = () => {
-        const newStory = {
-            userName: "Vous",
-            userImage: "ousseynouODC.jpeg",
-            images: selectedFiles,
-            messages: [storyMessage],
-            views: 0,
-            isRead: false,
-        };
-        setStories(prev => [...prev, newStory]);
-        setIsNewStoryModalOpen(false);
-        setSelectedFiles([]);
-        setStoryMessage("");
+    const handleStorySubmit = async () => {
+        const formData = new FormData();
+        formData.append("title", storyMessage);
+        formData.append("description", storyMessage);
+
+        selectedFiles.forEach((file) => {
+            formData.append("photo", file);
+        });
+
+        try {
+            await crudStoryPost.create(formData);
+            setIsNewStoryModalOpen(false);
+            setSelectedFiles([]);
+            setStoryMessage("");
+            queryClient.invalidateQueries("myStories");
+        } catch (error) {
+            console.error("Error creating story:", error);
+        }
     };
 
+    const deleteStory = async (storyId) => {
+        try {
+            await crudStoryDelete.delete(storyId);
+            queryClient.invalidateQueries("myStories");
+            closeStory();
+        } catch (error) {
+            console.error("Error deleting story:", error);
+        }
+    };
+
+    const viewStory = async (storyId) => {
+        try {
+            await crudStoryView.create({ storyId });
+            queryClient.invalidateQueries("storyfollowed");
+        } catch (error) {
+            console.error("Error viewing story:", error);
+        }
+    };
+
+    if (isLoadingMyStories || isLoadingFollowedStories) {
+        return <div>Loading stories...</div>;
+    }
+
+    if (myStoriesError || followedStoriesError) {
+        return <div>Error loading stories. Please try again later.</div>;
+    }
+
     return (
-        <div className="flex">
-            <div className="w-full rounded-2xl bg-gradient-to-r from-violet-400 to-gray-800 text-white p-4 overflow-y-auto">
-                <h2 className="text-2xl font-bold mb-4">Statut</h2>
-                <div className='flex gap-4'>
-                    <div className="flex items-center mb-6 cursor-pointer border-r p-2" onClick={addNewStory}>
+        <div className="bg-gray-100">
+            <div className="w-full bg-purple-50 text-black rounded-2xl border-1 border-[purple] shadow-lg shadow-purple-400 from-violet-400 to-gray-800  p-4 overflow-y-auto">
+                <h2 className="text-2xl font-bold mb-6">Statut</h2>
+                <div className="flex gap-4 overflow-x-auto pb-4">
+                    <div
+                        className="flex flex-col items-center cursor-pointer"
+                        onClick={() => openStory(0)}
+                    >
                         <div className="relative">
-                            <img src="ousseynouODC.jpeg" alt="Your status" className="w-14 h-14 rounded-full" />
-                            <button className="absolute bottom-0 right-0 bg-teal-500 rounded-full px-2">
-                                <span>+</span>
+                            <img
+                                src={user?.photo || "/default-avatar.png"}
+                                alt="Your status"
+                                className="w-16 h-16 rounded-full border-2 border-gray-300"
+                            />
+                            <button
+                                className="absolute bottom-0 right-0 bg-teal-500 rounded-full px-2"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    addNewStory();
+                                }}
+                            >
+                                <span className="text-white font-bold">+</span>
                             </button>
                         </div>
-
-                    </div>
-                    {stories.map((story, index) => (
-                        <div key={index} className="flex flex-col items-center gap-2 justify-center mb-4 cursor-pointer" onClick={() => openStory(index)}>
-                            <img src={story.photo} alt={story.userName} className={`w-12 h-12 rounded-full border-2 ${story.isRead ? 'border-gray-400' : 'border-teal-500'}`} />
-                            <div className="ml-4">
-                                <p className="font-semibold">{story.userName}</p>
+                        <span className="mt-1 text-sm">Your Story</span>
+                        {myStories.length > 0 && (
+                            <div className="flex items-center mt-1">
+                                <EyeIcon className="w-4 h-4 text-black mr-1" />
+                                <span className="text-xs text-black">{myStories[0].vues}</span>
                             </div>
-                        </div>
-                    ))}
+                        )}
+                    </div>
+                    {followedStories.length === 0 ? (
+                        <p className="text-center text-gray-500 self-center">
+                            No stories available
+                        </p>
+                    ) : (
+                        followedStories.map((story, index) => (
+                            <div
+                                key={story.id}
+                                className="flex flex-col items-center cursor-pointer"
+                                onClick={() => openStory(index + 1)}
+                            >
+                                <img
+                                    src={story.userImage}
+                                    alt={story.userName}
+                                    className={`w-16 h-16 rounded-full border-2 ${
+                                        story.isRead ? "border-gray-300" : "border-teal-500"
+                                    }`}
+                                />
+                                <span className="mt-1 text-sm">{story.userName}</span>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
 
             {activeStoryIndex !== null && (
                 <StoryViewer
-                    stories={stories}
-                    initialStoryIndex={activeStoryIndex}
+                    stories={activeStoryIndex === 0 ? myStories : followedStories}
+                    initialStoryIndex={activeStoryIndex === 0 ? 0 : activeStoryIndex - 1}
                     closeStory={closeStory}
                     markAsRead={markAsRead}
+                    deleteStory={deleteStory}
+                    viewStory={viewStory}
                 />
             )}
 
@@ -281,22 +364,39 @@ const StoryApp = () => {
 
             {isNewStoryModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-4 rounded-lg">
-                        <h2 className="text-lg font-semibold mb-2">Ajouter un nouveau statut</h2>
-                        <div className="flex flex-col mb-4">
+                    <div className="bg-white p-6 rounded-lg w-96">
+                        <h2 className="text-xl font-semibold mb-4">
+                            Add a new story
+                        </h2>
+                        <div className="grid grid-cols-3 gap-2 mb-4">
                             {selectedFiles.map((file, index) => (
-                                <img key={index} src={file} alt="Prévisualisation" className="mb-2 rounded" />
+                                <img
+                                    key={index}
+                                    src={URL.createObjectURL(file)}
+                                    alt="Preview"
+                                    className="w-full h-24 object-cover rounded"
+                                />
                             ))}
                         </div>
                         <textarea
-                            className="border p-2 w-full"
-                            placeholder="Ajouter un commentaire..."
+                            className="border p-2 w-full rounded mb-4"
+                            placeholder="Add a caption..."
                             value={storyMessage}
                             onChange={(e) => setStoryMessage(e.target.value)}
                         />
-                        <div className="flex justify-end mt-4">
-                            <button className="bg-teal-500 text-white px-4 py-2 rounded" onClick={handleStorySubmit}>Publier</button>
-                            <button className="bg-gray-400 text-white px-4 py-2 rounded ml-2" onClick={() => setIsNewStoryModalOpen(false)}>Annuler</button>
+                        <div className="flex justify-end">
+                            <button
+                                className="bg-gray-300 text-gray-700 px-4 py-2 rounded mr-2"
+                                onClick={() => setIsNewStoryModalOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="bg-teal-500 text-white px-4 py-2 rounded"
+                                onClick={handleStorySubmit}
+                            >
+                                Post
+                            </button>
                         </div>
                     </div>
                 </div>

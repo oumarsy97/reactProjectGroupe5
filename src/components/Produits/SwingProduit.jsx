@@ -1,9 +1,12 @@
 import React from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, DollarSign, Box } from 'lucide-react';
 import {getTimeDifference} from "../../utils/tokenUtils";
+import StarRating from "../Post/Note";
+import {useAuth} from "../../context/AuthContext";
 
 const SwingProduit = ({ produit }) => {
     const {
+        id,
         libelle,
         description,
         image,
@@ -14,6 +17,7 @@ const SwingProduit = ({ produit }) => {
         notes,
         commandes
     } = produit;
+    const { user } = useAuth();
 
     const timeAgo = new Date(createdAt).toLocaleDateString();
 
@@ -30,6 +34,7 @@ const SwingProduit = ({ produit }) => {
                         <h3 className="font-medium">{`${vendor.user.firstname} ${vendor.user.lastname}`}</h3>
                         <p className="text-gray-500 text-sm">{getTimeDifference(createdAt)}</p>
                     </div>
+                    <StarRating  idPost={id} idUser={user.id}/>
                 </div>
                 <h2 className="mt-4 text-xl font-semibold">{libelle}</h2>
                 <p className="mt-2">{description}</p>
@@ -46,18 +51,16 @@ const SwingProduit = ({ produit }) => {
             </div>
 
             <div className="media-container">
-                <img src={image} alt={libelle} className="w-full h-64 object-cover" />
+                <img src={image} alt={libelle} className="w-full h-full object-cover" />
             </div>
 
             <div className="p-6 border-t border-gray-100">
                 <div className="flex justify-between text-gray-600">
                     <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
                         <Heart className="h-5 w-5" />
-                        <span>{notes.length}</span>
                     </button>
                     <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
                         <MessageCircle className="h-5 w-5" />
-                        <span>{commandes.length}</span>
                     </button>
                     <button className="flex items-center space-x-2 hover:text-rose-500 transition-colors">
                         <Share2 className="h-5 w-5" />

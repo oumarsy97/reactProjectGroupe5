@@ -9,6 +9,7 @@ import useCrud from "../hooks/useCrudAxios";
 import { useToken } from "../context/TokenContext";
 import { useActor } from "../context/ActorContext";
 import SwingProduit from "./Produits/SwingProduit";
+import RepostComponent from './Post/RepostComponent';
 
 const SewingNetwork = () => {
     const { getToken } = useToken();
@@ -17,15 +18,23 @@ const SewingNetwork = () => {
 
     const crudPosts = useCrud(actor ? 'posts/others' : 'posts');
     const crudProduits = useCrud(actor ? 'produits/others' : 'produits');
+    const crudReposts = useCrud('reposts/Allreposts');
 
-    const { data: posts, isLoading: isLoadingPosts, isError: isErrorPosts } = useQuery('posts', () => crudPosts.get(), {
+
+    const { data: posts, isLoading: isLoadingPosts, isError: isErrorPosts, error: errorPosts } = useQuery('posts', () => crudPosts.get(), {
         staleTime: 60000,
         refetchOnWindowFocus: false,
     });
 
-    const { data: produits, isLoading: isLoadingProduits, isError: isErrorProduits } = useQuery('produits', () => crudProduits.get(), {
+    const { data: produits, isLoading: isLoadingProduits, isError: isErrorProduits, error: errorProduits } = useQuery('produits', () => crudProduits.get(), {
         staleTime: 60000,
         refetchOnWindowFocus: false,
+    });
+
+    const { data: reposts, isLoading: isLoadingReposts, isError: isErrorReposts, error: errorReposts } = useQuery('reposts', () => crudReposts.get(), {
+        staleTime: 60000,
+        refetchOnWindowFocus: false,
+        refetchIntervalInBackground: true,  
     });
 
     const shuffleAndFilterItems = useCallback((items) => {
@@ -47,16 +56,16 @@ const SewingNetwork = () => {
     }, [activeFilter]);
 
     const combinedItems = useMemo(() => {
-        if (!posts || !produits) return [];
         const allItems = [
-            ...posts.map(post => ({ ...post, type: 'post' })),
-            ...produits.map(produit => ({ ...produit, type: 'produit' }))
+            ...(posts || []).map(post => ({ ...post, type: 'post' })),
+            ...(produits || []).map(produit => ({ ...produit, type: 'produit' })),
+            ...(reposts || []).map(repost => ({ ...repost, type: 'repost' }))
         ];
         return shuffleAndFilterItems(allItems);
-    }, [posts, produits, shuffleAndFilterItems]);
+    }, [posts, produits, reposts, shuffleAndFilterItems]);
 
-    const isLoading = isLoadingPosts || isLoadingProduits;
-    const isError = isErrorPosts || isErrorProduits;
+    const isLoading = isLoadingPosts || isLoadingProduits || isLoadingReposts;
+    const isError = isErrorPosts || isErrorProduits || isErrorReposts;
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -68,14 +77,21 @@ const SewingNetwork = () => {
                     {isLoading ? (
                         <p>Chargement des éléments...</p>
                     ) : isError ? (
-                        <p>Une erreur est survenue lors du chargement des éléments.</p>
+                        <div>
+                            <p>Une erreur est survenue lors du chargement des éléments.</p>
+                            {errorPosts && <p>Erreur des posts: {errorPosts.message}</p>}
+                            {errorProduits && <p>Erreur des produits: {errorProduits.message}</p>}
+                            {errorReposts && <p>Erreur des reposts: {errorReposts.message}</p>}
+                        </div>
                     ) : (
                         combinedItems.map(item => (
-                            item.type ==='post' ? (
-                                <SewingPost  post={item} />
-                            ) : (
-                                <SwingProduit  produit={item} />
-                            )
+                            item.type === 'post' ? (
+                                <SewingPost post={item} key={item.id} />
+                            ) : item.type === 'produit' ? (
+                                <SwingProduit produit={item} />
+                            ) : item.type === 'repost' ? (
+                                <RepostComponent repost={item} />
+                            ) : null
                         ))
                     )}
                 </div>

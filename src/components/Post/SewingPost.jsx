@@ -21,6 +21,7 @@ const PostSwing = ({ post }) => {
     } = post;
     const { user: currentUser } = useAuth();
 
+
     const [likes, setLikes] = useState(post.likes);
     const videoRef = useRef(null);
     const [isLiked, setIsLiked] = useState(likes.some(like => like.idUser === currentUser.id));
@@ -178,8 +179,8 @@ const PostSwing = ({ post }) => {
                 <p className="mt-4">{description}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                     {tags.map((tag) => (
-                        <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-                            #{tag}
+                        <span key={tag.id} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                            #{tag.name}
                         </span>
                     ))}
                 </div>

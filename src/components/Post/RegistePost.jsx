@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { X, ImagePlus, Tag, Sparkles, Plus, Maximize } from 'lucide-react';
 import useCrud from "../../hooks/useCrudAxios";
 import AlertService from "../../services/notifications/AlertService";
@@ -17,6 +17,7 @@ export default function AddPostModal() {
     const [image, setImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const { create: createPost } = useCrud('posts');
+    const { create: createTag } = useCrud('posts/tags');
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -37,10 +38,11 @@ export default function AddPostModal() {
         }
     };
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.title || !formData.description || !formData.tags || !formData.category || !formData.size || !image) {
-            AlertService.error('Tous les champs sont obligatoires');
+            await AlertService.error('Tous les champs sont obligatoires');
             return;
         }
         if (actor.credits < 10) {
@@ -50,16 +52,30 @@ export default function AddPostModal() {
         setIsLoading(true);
         try {
             const formPayload = new FormData();
-            Object.keys(formData).forEach(key => formPayload.append(key, formData[key]));
+            Object.keys(formData).forEach(key => {
+                if (key !== 'tags') {
+                    formPayload.append(key, formData[key]);
+                }
+            });
             formPayload.append('photo', image);
 
-            const data = await createPost(formPayload);
-            setActor({ ...actor, credits: actor.credits - 10, posts: [...actor.posts, data] });
-            AlertService.success('Post créé avec succès');
+            // Création du post
+            const postData = await createPost(formPayload);
+
+            // Création des tags
+            const tags = formData.tags.split(',').map(tag => tag.trim());
+           tags.map( tag =>{
+               return createTag({postId:postData.id,name: tag},true)  // true for creating the tag if it does not exist yet.  false for updating the count of the tag if it does exist.
+
+           })
+
+            setActor({ ...actor, credits: actor.credits - 10, posts: [...actor.posts, postData] });
+            AlertService.success('Post et tags créés avec succès');
             setIsOpen(false);
+
             resetForm();
         } catch (error) {
-            AlertService.error('Erreur lors de la création du post');
+            await AlertService.error('Erreur lors de la création du post ou des tags');
             console.error(error);
         } finally {
             setIsLoading(false);
@@ -84,7 +100,7 @@ export default function AddPostModal() {
                 onClick={() => setIsOpen(true)}
                 className="flex flex-col items-center gap-0.5 hover:text-red-500"
             >
-                <Plus className="w-6 h-6" />
+                <Plus />
                 Créer
             </button>
         );

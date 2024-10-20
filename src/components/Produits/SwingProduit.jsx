@@ -3,7 +3,6 @@ import { Heart, MessageCircle, Share2, Bookmark, DollarSign, Box } from 'lucide-
 import {getTimeDifference} from "../../utils/tokenUtils";
 
 const SwingProduit = ({ produit }) => {
-console.log(produit)
     const {
         libelle,
         description,
@@ -17,7 +16,6 @@ console.log(produit)
     } = produit;
 
     const timeAgo = new Date(createdAt).toLocaleDateString();
-    console.log(vendor)
 
     return (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">

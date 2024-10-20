@@ -245,6 +245,7 @@ const PostSwing = ({ post }) => {
                 />
             )}
         </div>
+
     );
 };
 

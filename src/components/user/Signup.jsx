@@ -66,7 +66,7 @@ const Signup = () => {
             }
             // setToken(data.token);
             await AlertService.success('Inscription réussie!');
-            // navigate('/home');
+            // navigate('/');
             // navigate('/home');
         } catch (err) {
             await AlertService.error(err.message);

@@ -22,12 +22,11 @@ const SewingNetwork = () => {
 
 
     const { data: posts, isLoading: isLoadingPosts, isError: isErrorPosts, error: errorPosts } = useQuery('posts', () => crudPosts.get(), {
-        staleTime: 60000,
+        staleTime: 5000,
         refetchOnWindowFocus: false,
     });
-
     const { data: produits, isLoading: isLoadingProduits, isError: isErrorProduits, error: errorProduits } = useQuery('produits', () => crudProduits.get(), {
-        staleTime: 60000,
+        staleTime: 5000,
         refetchOnWindowFocus: false,
     });
 

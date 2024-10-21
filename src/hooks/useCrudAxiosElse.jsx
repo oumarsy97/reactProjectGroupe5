@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useTokenService } from '../utils/tokenUtils'; // Assurez-vous que le chemin est correct
 
-const API_BASE_URL = "https://projectprisma-tpm2.onrender.com/api/v1";
+const API_BASE_URL = "http://localhost:5000/api/v1";
 
 const useCrud = (baseURL) => {
     const { getToken } = useTokenService(); // Récupérer le token depuis utils

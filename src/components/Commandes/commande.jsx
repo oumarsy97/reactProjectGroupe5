@@ -4,8 +4,9 @@ import ClientList from "./ClientList";
 import BoutiqueCard from '../Achats/BoutiqueCard';
 import {useAuth} from "../../context/AuthContext";
 import { useActor } from "../../context/ActorContext";
-import useCrud from "../../hooks/useCrudAxios";
+import useCrud from "../../hooks/useCrudAxiosElse";
 import AlertService from "../../services/notifications/AlertService";
+import Navbar from '../UserProfile/Navbar';
 
 const OrderItem = ({ id, image, libelle, qte, price }) => {
   return (
@@ -27,7 +28,7 @@ const OrderItem = ({ id, image, libelle, qte, price }) => {
 const Commandesummary = ({ items}) => {
   const total = items.reduce((sum, item) => sum + item.price * item.qte, 0);
   return (
-    <div className="bg-white w-1/2 rounded-lg m-auto flex flex-col justify-between shadow-md overflow-y-auto">
+    <div className="bg-white w-2/3 rounded-lg m-auto flex flex-col justify-between shadow-md overflow-y-auto">
       <table >
         <thead>
           <tr className="bg-gradient-to-br from-violet-400 to-purple-500 text-white uppercase text-sm leading-normal">
@@ -52,7 +53,7 @@ const Commandesummary = ({ items}) => {
 
 const InfosCommande = ({client, commande, onclick, onCancel}) => {
   return (
-    <div className="bg-white w-1/2 rounded-lg m-auto flex flex-col justify-between shadow-md overflow-y-auto">
+    <div className="bg-white w-2/3 rounded-lg m-auto flex flex-col justify-between shadow-md overflow-y-auto">
       <table >
         <thead>
           <tr className="bg-gradient-to-br from-violet-400 to-purple-500 text-white uppercase text-sm leading-normal">
@@ -64,7 +65,7 @@ const InfosCommande = ({client, commande, onclick, onCancel}) => {
         <tbody className="border-t pt-4">
           <tr>
             <td className="flex items-center p-2 text-purple-600">
-              <img src={client.photo} alt={client.firstname+' '+client.lastname} className="w-12 h-12 rounded-full mr-2" />
+              <img src={client.photo} alt={client.firstname+' '+client.lastname} className="w-16 h-16 rounded-full mr-2" />
               <span>{client.firstname+' '+client.lastname}</span>
             </td>
             <td className="p-2 text-purple-600">{client.email}</td>
@@ -99,7 +100,8 @@ const CommandeDetails = (vendor) => {
   const productsCommande = commandeSelected?.produits;
   const { user } = useAuth();
   const { actor } = useActor();
-  const vendorId = actor?.id || 1;
+  const vendorId = actor?.id;
+  console.log(vendorId)
   // Appel de useCrud ici
   const { get, update } = useCrud('produits/commandes');
 
@@ -166,10 +168,11 @@ const CommandeDetails = (vendor) => {
 
   return (
     <div className="min-h-screen h-full bg-white">
-      <main className="container mx-auto mt-8 p-4">
+      <Navbar />
+      <main className="container mx-auto mt-16 p-4">
         {commandeSelected ? (
           <>
-            <button className="bg-gradient-to-br from-violet-400 to-purple-500 flex fixed bottom-1 right-3 ml-16 justify-center items-center text-white rounded-full rounded-bl_ p-3 animate-bounce" onClick={message}>
+            <button className="bg-gradient-to-br from-violet-400 to-purple-500 flex fixed bottom-1 left-3 ml-16 justify-center items-center text-white rounded-full rounded-bl_ p-3 animate-bounce" onClick={message}>
               <MessageSquare className="animate-pulse" size={24} />
             </button>
             <button onClick={onBack} className="flex items-center text-purple-600 hover:text-purple-800 mb-4">

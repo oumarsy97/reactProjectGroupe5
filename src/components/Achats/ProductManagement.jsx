@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import useCrud from '../../hooks/useCrudAxios';
-import { Search, Trash2, Plus, Minus, User, Mail, Phone, ArrowLeft, MessageSquare, CreditCard, ShoppingBag } from 'lucide-react';
+import useCrud from '../../hooks/useCrudAxiosElse';
+import { Search, Trash2, Plus, Minus, User, Mail, Phone, ArrowLeft, MessageSquare, CreditCard, ShoppingBag, ShoppingCart } from 'lucide-react';
 import BoutiqueCard from './BoutiqueCard';
 import { useAuth } from '../../context/AuthContext';
 
@@ -53,7 +53,8 @@ const ProductManagementPage = ({ vendor, onBack }) => {
           alert('Vous devez être connecté pour passer une commande');
           return;
         }
-  
+        console.log(user.id);
+        
         const orderData = {
           idUser:  user.id,
           actorId: vendor.id,
@@ -110,8 +111,8 @@ const ProductManagementPage = ({ vendor, onBack }) => {
   }))];
 
   return (
-    <div className="bg-white flex flex-col h-screen">
-      <button className="flex fixed bottom-1 right-3 ml-16 justify-center items-center bg-gradient-to-br from-violet-500 to-purple-500 text-white rounded-full rounded-bl_ p-3 animate-bounce" onClick={message}>
+    <div className="bg-white mt-16 flex flex-col h-screen">
+      <button className="flex fixed bottom-1 left-3 ml-16 justify-center items-center bg-gradient-to-br from-violet-500 to-purple-500 text-white rounded-full rounded-bl_ p-3 animate-bounce" onClick={message}>
         <MessageSquare className="animate-pulse" size={24} />
       </button>
         {/* Partie droite avec les informations du vendeur et le tableau des produits */}
@@ -131,7 +132,7 @@ const ProductManagementPage = ({ vendor, onBack }) => {
           <div className="w-[98%] self-end bg-white text-purple-600 p-4 overflow-x-auto">
             <div className="mb-4 flex justify-between items-center">
               <div className='text-purple-800 font-bold text-xl'>
-                <h1>Bienvenue </h1>
+                <h1 className='flex'>Bienvenue dans ma boutique <span className='animate-bounce'> <ShoppingCart /> </span> </h1>
               </div>
               <div className="relative w-1/3">
                 <input

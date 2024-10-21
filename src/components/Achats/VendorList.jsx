@@ -9,9 +9,9 @@ const VendorList = ({ vendors, onSelectVendor }) => {
         vendor.user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
     return (
-        <div className="container mx-auto p-6">
+        <div className="container mx-auto p-6 mt-20">
             <h1 className="text-2xl font-bold mb-4 text-purple-800">Liste des Vendeurs</h1>
-            <div className="flex items-center mb-4 self-end relative w-1/3">
+            <div className="flex items-center mb-4 self-end relative w-1/2">
                 <input
                     type="text"
                     placeholder="Rechercher par nom, prenom, email..."

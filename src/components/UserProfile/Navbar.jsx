@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Scissors, Users,User,Settings, Star, ShoppingCart, MessageCircle, Bell, ChevronDown, LogOut } from 'lucide-react';
+import { Scissors, Users,User,Settings, Star, ShoppingCart, MessageCircle, Bell, ChevronDown, LogOut, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useActor } from "../../context/ActorContext";
@@ -9,7 +9,7 @@ import ProgressiveUserSearch from "../search/ProgressiveUserSearch";
 import {useToken} from "../../context/TokenContext";
 import ChatPopup from "../chat/ChatComponent";
 import CommandeDetails from '../Commandes/commande';
-import CommandeClient from '../Achats/CommandeClient';
+import CommandeClient from '../Achats/commandeClient';
 import AlertService from "../../services/notifications/AlertService";
 import ChatApp from "../chat/ChatApp";
 
@@ -20,7 +20,7 @@ const Navbar = () => {
     const { actor,logout: decon } = useActor();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
-
+    console.log(actor.id)
     const handleLogout = () => {
         setShowLogoutConfirmation(true);
     };
@@ -36,7 +36,6 @@ const Navbar = () => {
     function hundlenavigate(profile) {
         navigate(`/${profile}`);
     }
-
     return (
         <nav className="shadow-lg fixed w-full top-0 z-50 bg-gradient-to-b from-black to-purple-900 text-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
@@ -51,10 +50,11 @@ const Navbar = () => {
                 </div>
                 <div className="flex items-center space-x-4">
                     {actor && (user.role === "VENDOR" ? <AddProduitModal/> : <AddPostModal/>)}
+                    
                     <NavItem icon={<Users size={20}/>} text="Communauté"/>
                     <NavItem icon={<Star size={20}/>} text="Favoris"/>
                     <ChatApp />
-                    <NavItem icon={<ShoppingCart size={20}/>} text="Achats"/>
+                    <NavItem icon={<ShoppingCart size={20}/>} text="Achats" onclick={()=>{navigate('/achats')}}/>
 
                     <button className="relative p-2 rounded-full hover:bg-purple-700 transition-colors duration-200">
                         <Bell size={20}/>
@@ -83,6 +83,12 @@ const Navbar = () => {
                                     <User size={16} className="mr-2"/>
                                     Profil
                                 </button>
+                                
+                                {(actor && user.role === "VENDOR") && (<button onClick={() => hundlenavigate('commandes')}
+                                        className="w-full flex ml-0 px-4 py-2 text-sm text-gray-300 hover:bg-purple-700 hover:text-white">
+                                    <ShoppingBag size={16} className="mr-2"/>
+                                    Mes Commandes
+                                </button>)}
                                 <button onClick={() => hundlenavigate('parametre')}
                                         className="w-full flex px-4 py-2 text-sm text-gray-300 hover:bg-purple-700 hover:text-white">
                                     <Settings size={16} className="mr-2"/>
@@ -130,7 +136,8 @@ const Navbar = () => {
 
 const NavItem = ({icon, text, onclick}) => (
     <button
-        className="flex flex-col items-center space-x-1 p-2 rounded-full hover:bg-[#0077be] hover:bg-opacity-50 transition-colors duration-200">
+        className="flex flex-col items-center space-x-1 p-2 rounded-full hover:bg-[#0077be] hover:bg-opacity-50 transition-colors duration-200"
+        onClick={onclick}>
         {icon}
         <span className="hidden md:inline text-sm">{text}</span>
     </button>

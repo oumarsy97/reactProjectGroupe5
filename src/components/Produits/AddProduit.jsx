@@ -3,6 +3,7 @@ import { X, ImagePlus, Tag, Sparkles, Plus, Maximize } from 'lucide-react';
 import useCrud from "../../hooks/useCrudAxios";
 import AlertService from "../../services/notifications/AlertService";
 import { useActor } from "../../context/ActorContext";
+import { useAuth } from "../../context/AuthContext";
 
 const SIZE = {
     XS: 'XS',
@@ -18,11 +19,13 @@ export default function AddProduitModal() {
     const [image, setImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const { create: createPost } = useCrud('produits');
+    const {user} = useAuth();
     const [formData, setFormData] = useState({
         libelle: '',
         description: '',
         qte: '1',
         price: '1',
+        idUser: user.id,
     });
     const { actor, setActor } = useActor();
     const [isLoading, setIsLoading] = useState(false);
@@ -54,7 +57,6 @@ export default function AddProduitModal() {
             Object.keys(formData).forEach(key => formPayload.append(key, formData[key]));
             formPayload.append('photo', image);
 
-
             const data = await createPost(formPayload);
             setActor({ ...actor, credits: actor.credits - 10, produits: [...actor.produits, data] });
             AlertService.success('Produit ajouter avec success');
@@ -74,6 +76,7 @@ export default function AddProduitModal() {
             description: '',
             qte: '',
             price: '1',
+            idUser: user.id,
         });
         setImage(null);
         setImagePreview(null);

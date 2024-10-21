@@ -12,7 +12,7 @@ import UserDetail from "./components/UserDetail";
 import ChatPopup from "./components/chat/ChatComponent";
 import Chat from "./components/chat/Chat";
 import CommandeDetails from './components/Commandes/commande';
-import CommandeClient from './components/Achats/CommandeClient';
+import CommandeClient from './components/Achats/commandeClient';
 
 const queryClient = new QueryClient();
 
@@ -39,7 +39,7 @@ function App() {
                                         } />
                                         <Route path="/achats" element={
                                             <ProtectedRoute>
-                                                <commandeClient />
+                                                <CommandeClient />
                                             </ProtectedRoute>
                                         } />
                                         <Route path="/commandes" element={

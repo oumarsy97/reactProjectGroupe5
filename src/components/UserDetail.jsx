@@ -27,40 +27,41 @@ const UserDetail = () => {
     if (!user) return <div className="flex justify-center items-center h-screen font-sans text-[#003366]">Chargement...</div>;
 
     return (
-        <div className="bg-white min-h-screen mt-4 font-sans">
+        <div className="bg-white min-h-screen font-sans">
             <Navbar />
-            <div className="max-w-4xl mx-auto p-6 pt-16">
+            <div className="max-w-4xl mx-auto p-4 sm:p-20 pt-20 pb-24">
                 <motion.div
-                    className="bg-[#f0f8ff] rounded-lg shadow-lg overflow-hidden border-t-4 border-[#003366]"
+                    className="bg-[#f0f8ff] rounded-lg shadow-lg overflow-hidden"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <div className="h-48 bg-gradient-to-b from-[#003366] to-[#0077be]">
-                        <div className="grid grid-cols-3 gap-6 p-6">
-                            <StatCard title="Abonnés" value={user.actor?.[0]?.follow?.length || 0} />
-                            <StatCard title="Abonnements" value={user.actor?.[0]?.follow?.length || 0} />
-                            <StatCard title="Avis" value={user.rating || 0} totalReviews={user.totalReviews || 0} isRating />
+                    <div className="bg-gradient-to-b from-[#003366] to-[#0077be] p-4">
+                        <div className="flex flex-col items-center mb-4">
+                            <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white flex items-center justify-center mb-3">
+                                {user.photo ? (
+                                    <img src={user.photo} alt={user.firstname} className="w-full h-full object-cover" />
+                                ) : (
+                                    <Scissors className="w-12 h-12 text-[#003366]" />
+                                )}
+                            </div>
+                            <h1 className="text-2xl font-bold text-white text-center">{`${user.firstname} ${user.lastname}`}</h1>
+                            <p className="text-[#e6f3ff] font-semibold">{user.role}</p>
                         </div>
-                    </div>
-
-                    <div className="relative px-6 py-4">
-                        <div className="absolute -top-16 left-6 w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white flex items-center justify-center">
-                            {user.photo ? (
-                                <img src={user.photo} alt={user.firstname} className="w-full h-full object-cover" />
-                            ) : (
-                                <Scissors className="w-16 h-16 text-[#003366]" />
-                            )}
-                        </div>
-                        <div className="ml-40 mb-4">
-                            <h1 className="text-3xl font-bold text-[#003366]">{`${user.firstname} ${user.lastname}`}</h1>
-                            <p className="text-[#0077be] font-semibold">{user.role}</p>
-                        </div>
-                        <p className="mt-4 text-[#333333]">{user.actor?.[0]?.bio}</p>
-                        <div className="mt-4 flex flex-wrap gap-4">
+                        <div className="text-[#e6f3ff] text-sm text-center mb-4 sm:grid grid-cols-3 gap-4 sm:grid-rows-3">
                             <InfoItem icon={MapPin} text={user.actor?.[0]?.address} />
                             <InfoItem icon={Calendar} text={getTimeDifference(user.createdAt)} />
                             <InfoItem icon={Briefcase} text={`${user.actor?.[0]?.posts?.length || 0} publications`} />
+                        </div>
+
+                        <p className="text-[#e6f3ff] text-sm text-center mb-4">{user.actor?.[0]?.bio}</p>
+                    </div>
+
+                    <div className="p-4">
+                        <div className="flex justify-between">
+                            <StatCard title="Abonnés" value={user.actor?.[0]?.follow?.length || 0} />
+                            <StatCard title="Abonnements" value={user.actor?.[0]?.follow?.length || 0} />
+                            <StatCard title="Avis" value={user.rating || 0} totalReviews={user.totalReviews || 0} isRating />
                         </div>
                     </div>
                 </motion.div>
@@ -72,8 +73,8 @@ const UserDetail = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.5 }}
                     >
-                        <h2 className="text-2xl font-bold text-[#003366] mb-4">Publications</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <h2 className="text-xl font-bold text-[#003366] mb-4">Publications</h2>
+                        <div className="grid grid-cols-2 gap-4">
                             {posts.map((post, index) => (
                                 <PostCard key={post.id} post={post} index={index} />
                             ))}
@@ -86,23 +87,19 @@ const UserDetail = () => {
 };
 
 const StatCard = ({ title, value, totalReviews, isRating }) => (
-    <motion.div
-        className="bg-white p-4 rounded-xl text-center hover:bg-[#e6f3ff] transition-colors cursor-pointer shadow-md"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-    >
-        <div className="font-bold text-2xl text-[#003366] flex items-center justify-center">
-            {isRating && <Star className="w-5 h-5 text-[#ffd700] mr-1" />}
+    <div className="text-center">
+        <div className="font-bold text-xl text-[#003366] flex items-center justify-center">
+            {isRating && <Star className="w-4 h-4 text-[#ffd700] mr-1" />}
             {value}
         </div>
-        <div className="text-[#0077be] text-sm">{title}</div>
+        <div className="text-[#0077be] text-xs">{title}</div>
         {isRating && totalReviews && <div className="text-[#0077be] text-xs">{totalReviews} avis</div>}
-    </motion.div>
+    </div>
 );
 
 const InfoItem = ({ icon: Icon, text }) => (
-    <div className="flex items-center text-[#333333]">
-        <Icon className="w-5 h-5 mr-2 text-[#0077be]" />
+    <div className="flex items-center justify-center mb-2">
+        <Icon className="w-4 h-4 mr-2" />
         {text}
     </div>
 );
@@ -113,22 +110,21 @@ const PostCard = ({ post, index }) => (
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: index * 0.1 }}
-        whileHover={{ scale: 1.05 }}
     >
         <img
             src={post.photo}
             alt={`Post ${post.id}`}
-            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#003366]/70 via-[#003366]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <div className="flex justify-center space-x-6">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#003366]/70 via-[#003366]/30 to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
+                <div className="flex justify-center space-x-4">
                     <div className="flex items-center">
-                        <Heart className="w-5 h-5 mr-2" fill="#ffffff" />
+                        <Heart className="w-4 h-4 mr-1" fill="#ffffff" />
                         {post.likes.length}
                     </div>
                     <div className="flex items-center">
-                        <MessageCircle className="w-5 h-5 mr-2" stroke="#ffffff" />
+                        <MessageCircle className="w-4 h-4 mr-1" stroke="#ffffff" />
                         {post.comments.length}
                     </div>
                 </div>

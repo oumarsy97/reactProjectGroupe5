@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ImagePlus, Tag, Sparkles, Plus, Maximize } from 'lucide-react';
+import { X, ImagePlus, Tag, Sparkles, Plus, Maximize, ArrowLeft } from 'lucide-react';
 import useCrud from "../../hooks/useCrudAxios";
 import AlertService from "../../services/notifications/AlertService";
 import { useActor } from "../../context/ActorContext";
@@ -11,7 +11,7 @@ const SIZE = {
     L: 'L',
     XL: 'XL'
 };
-const MAX_IMAGE_SIZE = 1024 * 1024; // 1MB
+const MAX_IMAGE_SIZE = 1024 * 1024;
 
 export default function AddProduitModal() {
     const [isOpen, setIsOpen] = useState(false);
@@ -49,11 +49,9 @@ export default function AddProduitModal() {
         }
         setIsLoading(true);
         try {
-            console.log(formData);
             const formPayload = new FormData();
             Object.keys(formData).forEach(key => formPayload.append(key, formData[key]));
             formPayload.append('photo', image);
-
 
             const data = await createPost(formPayload);
             setActor({ ...actor, credits: actor.credits - 10, produits: [...actor.produits, data] });
@@ -90,11 +88,12 @@ export default function AddProduitModal() {
             </button>
         );
     }
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-5xl flex">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-5xl lg:flex">
                 {/* Image section */}
-                <div className="w-1/3 p-6 flex items-center justify-center">
+                <div className="w-full lg:w-1/3 p-6 flex items-center justify-center">
                     <div className="relative w-full h-full">
                         <input
                             type="file"
@@ -141,7 +140,7 @@ export default function AddProduitModal() {
                 </div>
 
                 {/* Form section */}
-                <div className="w-2/3 p-6">
+                <div className="w-full lg:w-2/3 p-6">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                         Ajouter Produit
                     </h2>
@@ -189,8 +188,7 @@ export default function AddProduitModal() {
                                     onChange={handleInputChange}
                                     type="number"
                                     className="mt-2 w-full border-2 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 bg-gray-50 dark:bg-gray-800"
-                                   min="1"
-
+                                    min="1"
                                     required
                                 />
                             </div>
@@ -208,7 +206,6 @@ export default function AddProduitModal() {
                                     className="mt-2 w-full border-2 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 bg-gray-50 dark:bg-gray-800"
                                     required
                                 />
-
                             </div>
                         </div>
 
@@ -229,12 +226,20 @@ export default function AddProduitModal() {
                                 className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 hover:from-blue-700 hover:via-purple-700 hover:to-pink-600 text-white px-6 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                                 disabled={isLoading}
                             >
-                                {isLoading ? 'Publication en cours...' : 'Publier'}
+                                {isLoading ? 'Chargement...' : 'Ajouter'}
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
+
+            {/* Bouton retour visible seulement en mobile */}
+            <button
+                onClick={() => setIsOpen(false)}
+                className="lg:hidden absolute top-4 left-4 p-2 bg-gray-200 hover:bg-gray-300 rounded-full shadow-lg"
+            >
+                <ArrowLeft className="w-6 h-6 text-gray-700" />
+            </button>
         </div>
     );
 }

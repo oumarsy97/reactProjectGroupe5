@@ -6,13 +6,11 @@ import SewingPost from "./Post/SewingPost";
 import SidebarTop from "./sideBar/SidebarTop";
 import SidebarRight from "./sideBar/SidebarRight";
 import useCrud from "../hooks/useCrudAxios";
-import { useToken } from "../context/TokenContext";
 import { useActor } from "../context/ActorContext";
 import SwingProduit from "./Produits/SwingProduit";
-import RepostComponent from './Post/RepostComponent';
+import SewingRepost from './Post/SewingRepost';
 
 const SewingNetwork = () => {
-    const { getToken } = useToken();
     const { actor } = useActor();
     const [activeFilter, setActiveFilter] = useState('tous');
 
@@ -20,34 +18,40 @@ const SewingNetwork = () => {
     const crudProduits = useCrud(actor ? 'produits/others' : 'produits');
     const crudReposts = useCrud('reposts/Allreposts');
 
-
-    const { data: posts, isLoading: isLoadingPosts, isError: isErrorPosts, error: errorPosts } = useQuery('posts', () => crudPosts.get(), {
+    const { data: posts } = useQuery('posts', () => crudPosts.get(), {
         staleTime: 60000,
         refetchOnWindowFocus: false,
     });
 
-    const { data: produits, isLoading: isLoadingProduits, isError: isErrorProduits, error: errorProduits } = useQuery('produits', () => crudProduits.get(), {
+    const { data: produits } = useQuery('produits', () => crudProduits.get(), {
         staleTime: 60000,
         refetchOnWindowFocus: false,
     });
 
-    const { data: reposts, isLoading: isLoadingReposts, isError: isErrorReposts, error: errorReposts } = useQuery('reposts', () => crudReposts.get(), {
+    const { data: reposts } = useQuery('reposts', () => crudReposts.get(), {
         staleTime: 60000,
         refetchOnWindowFocus: false,
-        refetchIntervalInBackground: true,  
     });
 
-    const shuffleAndFilterItems = useCallback((items) => {
+    const filterItems = useCallback((items) => {
         if (!items) return [];
-        const shuffledItems = [...items].sort(() => Math.random() - 0.5);
-        return shuffledItems.filter(item => {
-            switch(activeFilter) {
+        return items.filter(item => {
+            const itemDate = new Date(item.createdAt);
+            const now = new Date();
+            const diffHours = (now - itemDate) / (1000 * 60 * 60);
+
+            switch (activeFilter) {
+                case 'tous':
+                    return true;
+                case 'posts':
+                    return item.type === 'post';
+                case 'produits':
+                    return item.type === 'produit';
+                case 'reposts':
+                    return item.type === 'repost';
                 case 'tendances':
                     return item.likes && item.likes.length > 10;
                 case 'recent':
-                    const itemDate = new Date(item.createdAt);
-                    const now = new Date();
-                    const diffHours = (now - itemDate) / (1000 * 60 * 60);
                     return diffHours < 24;
                 default:
                     return true;
@@ -61,41 +65,42 @@ const SewingNetwork = () => {
             ...(produits || []).map(produit => ({ ...produit, type: 'produit' })),
             ...(reposts || []).map(repost => ({ ...repost, type: 'repost' }))
         ];
-        return shuffleAndFilterItems(allItems);
-    }, [posts, produits, reposts, shuffleAndFilterItems]);
+        return allItems;
+    }, [posts, produits, reposts]);
 
-    const isLoading = isLoadingPosts || isLoadingProduits || isLoadingReposts;
-    const isError = isErrorPosts || isErrorProduits || isErrorReposts;
+    const filteredItems = useMemo(() => filterItems(combinedItems), [combinedItems, filterItems]);
 
     return (
         <div className="min-h-screen bg-gray-100">
             <Navbar />
-            <div className="grid grid-cols-12 gap-12 pt-24 max-w-7xl mx-auto px-4">
-                <SidebarLeft />
-                <div className="col-span-6 space-y-6">
+            <div className="grid grid-cols-12 gap-4 lg:gap-12 pt-24 max-w-7xl mx-auto px-4 bottom-10 lg:bottom-5">
+                <div className="hidden lg:block lg:col-span-3">
+                    <SidebarLeft />
+                </div>
+                <div className="col-span-12 lg:col-span-9 xl:col-span-6 space-y-6 xl:mb-5 mb-16">
                     <SidebarTop activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
-                    {isLoading ? (
-                        <p>Chargement des éléments...</p>
-                    ) : isError ? (
-                        <div>
-                            <p>Une erreur est survenue lors du chargement des éléments.</p>
-                            {errorPosts && <p>Erreur des posts: {errorPosts.message}</p>}
-                            {errorProduits && <p>Erreur des produits: {errorProduits.message}</p>}
-                            {errorReposts && <p>Erreur des reposts: {errorReposts.message}</p>}
-                        </div>
+                    {filteredItems.length > 0 ? (
+                        filteredItems.map(item => {
+                            switch (item.type) {
+                                case 'post':
+                                    return <SewingPost post={item} key={item.id} />;
+                                case 'produit':
+                                    return <SwingProduit produit={item} key={item.id} />;
+                                case 'repost':
+                                    return <SewingRepost repost={item} key={item.id} />;
+                                default:
+                                    return null;
+                            }
+                        })
                     ) : (
-                        combinedItems.map(item => (
-                            item.type === 'post' ? (
-                                <SewingPost post={item} key={item.id} />
-                            ) : item.type === 'produit' ? (
-                                <SwingProduit produit={item} />
-                            ) : item.type === 'repost' ? (
-                                <RepostComponent repost={item} />
-                            ) : null
-                        ))
+                        <p>Aucun élément trouvé pour ce filtre.</p>
                     )}
                 </div>
-                <SidebarRight />
+                <div className="lg:block lg:col-span-3">
+                    <div className="sticky top-0">
+                        <SidebarRight />
+                    </div>
+                </div>
             </div>
         </div>
     );

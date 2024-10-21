@@ -4,7 +4,7 @@ import ProfileCard from "../UserProfile/ProfilCard";
 import { useAuth } from '../../context/AuthContext';
 import { useActor } from "../../context/ActorContext";
 import { useNavigate } from 'react-router-dom';
-import FollowersPopup from './FollowersPopup'; // Assurez-vous que ce composant est créé
+import FollowersPopup from './FollowersPopup';
 
 const StatsCard = ({ icon: Icon, title, value, onClick, isClickable = false }) => (
     <div 
@@ -41,10 +41,10 @@ const SidebarLeft = () => {
             setShowFollowingPopup(true);
         }
     };
-
+    
     return (
-        <div className="col-span-3">
-            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24 border border-gray-200">
+        <div className="hidden md:block w-full lg:col-span-3 md:col-span-4 lg:h-full">
+            <div className="bg-gradient-to-b from-black to-purple-900 rounded-xl shadow-lg p-6 sticky top-24 border border-purple-600">
                 <ProfileCard />
                 <div className="mt-6 space-y-4">
                     <StatsCard 
@@ -73,7 +73,7 @@ const SidebarLeft = () => {
                     )}
                 </div>
                 <button
-                    className="w-full mt-6 bg-gradient-to-r from-violet-400 to-purple-500 text-white py-3 px-4 rounded-lg font-semibold shadow-md hover:from-violet-500 hover:to-purple-600 transition-all duration-300 transform hover:scale-105"
+                    className="w-full mt-6 bg-gradient-to-r from-purple-500 to-violet-500 text-white py-3 px-4 rounded-lg font-semibold shadow-md hover:from-purple-600 hover:to-violet-600 transition-all duration-300 transform hover:scale-105"
                     onClick={() => navigate("/profile")}
                 >
                     Voir mon profil

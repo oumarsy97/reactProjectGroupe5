@@ -3,9 +3,9 @@ import useCrud from "../../hooks/useCrudAxios";
 import { useQuery, useQueryClient } from "react-query";
 import { useAuth } from "../../context/AuthContext";
 import { TrashIcon, EyeIcon } from '@heroicons/react/solid';
+import AlertService from "../../services/notifications/AlertService";
 
-const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, deleteStory, viewStory,}) =>
-{
+const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, deleteStory, viewStory }) => {
     const [currentStoryIndex, setCurrentStoryIndex] = useState(initialStoryIndex);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [progress, setProgress] = useState(0);
@@ -24,8 +24,8 @@ const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, delet
     }, [progress]);
 
     useEffect(() => {
-        // Mark story as viewed when it's displayed
         const currentStory = stories[currentStoryIndex];
+        // Marquer la story comme vue si elle n'appartient pas à l'utilisateur connecté
         if (currentStory && currentStory.actorId !== user?.id) {
             viewStory(currentStory.id);
         }
@@ -37,12 +37,12 @@ const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, delet
             setCurrentImageIndex((prev) => prev + 1);
             setProgress(0);
         } else if (currentStoryIndex < stories.length - 1) {
-            markAsRead(currentStory);
+            markAsRead(currentStory); // Marquer la story comme lue
             setCurrentStoryIndex((prev) => prev + 1);
             setCurrentImageIndex(0);
             setProgress(0);
         } else {
-            markAsRead(currentStory);
+            markAsRead(currentStory); // Dernière story, marquer comme lue
             closeStory();
         }
     };
@@ -63,14 +63,18 @@ const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, delet
     return (
         <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
             <div className="relative w-full h-full overflow-hidden">
+                {/* Image floue pour la version desktop */}
                 <div
-                    className="absolute inset-0 bg-cover bg-center blur-md"
+                    className="absolute inset-0 bg-cover bg-center blur-md hidden lg:block"
                     style={{
                         backgroundImage: `url(${currentStory.photo[currentImageIndex]})`,
                     }}
                 ></div>
+
                 <div className="relative z-10 flex flex-col items-center justify-center h-full">
-                    <div className="relative w-1/2 h-full flex items-center justify-center">
+                    {/* Conteneur de l'image originale */}
+                    <div className="relative w-full h-full lg:w-auto lg:h-full flex items-center justify-center">
+                        {/* Barre de progression en haut */}
                         <div className="absolute top-4 left-0 right-0 flex px-4">
                             {currentStory.photo.map((_, index) => (
                                 <div key={index} className="flex-1 h-1 bg-gray-600 mx-0.5">
@@ -88,6 +92,8 @@ const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, delet
                                 </div>
                             ))}
                         </div>
+
+                        {/* Informations de l'utilisateur */}
                         <div className="absolute top-8 left-4 flex items-center">
                             <img
                                 src={currentStory.userImage}
@@ -98,16 +104,22 @@ const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, delet
                                 {currentStory.userName}
                             </span>
                         </div>
+
+                        {/* Image principale */}
                         <img
                             src={currentStory.photo[currentImageIndex]}
                             alt="Story"
-                            className="max-w-full h-full"
+                            className="w-full h-auto object-contain lg:w-auto lg:h-full"
                         />
+
+                        {/* Message lié à l'image */}
                         <div className="absolute bottom-16 left-4 right-4 p-4 rounded">
                             <p className="text-white text-center">
                                 {currentStory.messages[currentImageIndex]}
                             </p>
                         </div>
+
+                        {/* Boutons pour supprimer et voir les vues (uniquement pour l'utilisateur connecté) */}
                         {currentStory.actorId === user?.id && (
                             <div className="absolute bottom-4 left-4 right-4 flex justify-center">
                                 <button
@@ -115,16 +127,18 @@ const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, delet
                                     className="bg-red-500 text-white px-3 py-1 rounded-full text-sm mr-2 flex items-center"
                                 >
                                     <TrashIcon className="w-4 h-4 mr-1" />
-                                    Delete
+                                    Supprimer
                                 </button>
                                 <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm flex items-center">
                                     <EyeIcon className="w-4 h-4 mr-1" />
-                                    {currentStory.vues} views
+                                    {currentStory.vues} vues
                                 </div>
                             </div>
                         )}
                     </div>
                 </div>
+
+                {/* Boutons de navigation et fermeture */}
                 <button
                     onClick={closeStory}
                     className="absolute top-4 right-4 text-white text-2xl z-20"
@@ -148,11 +162,13 @@ const StoryViewer = ({ stories, initialStoryIndex, closeStory, markAsRead, delet
     );
 };
 
+
 const StoryApp = () => {
     const [activeStoryIndex, setActiveStoryIndex] = useState(null);
     const [isNewStoryModalOpen, setIsNewStoryModalOpen] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [storyMessage, setStoryMessage] = useState("");
+    const [isPosting, setIsPosting] = useState(false);
     const fileInputRef = useRef(null);
     const { user } = useAuth();
     const queryClient = useQueryClient();
@@ -171,6 +187,7 @@ const StoryApp = () => {
         const fetchedStories = await crudStoryMyStories.get();
         return groupStories(fetchedStories);
     });
+    
     const {
         data: followedStories = [],
         isLoading: isLoadingFollowedStories,
@@ -238,6 +255,7 @@ const StoryApp = () => {
     };
 
     const handleStorySubmit = async () => {
+        setIsPosting(true);
         const formData = new FormData();
         formData.append("title", storyMessage);
         formData.append("description", storyMessage);
@@ -252,12 +270,14 @@ const StoryApp = () => {
             setSelectedFiles([]);
             setStoryMessage("");
             queryClient.invalidateQueries("myStories");
+            AlertService.success('stories postés avec success.');
         } catch (error) {
             console.error("Error creating story:", error);
+            AlertService.error('Error creating story.');
         }
     };
 
-    const deleteStory = async (storyId) => {
+    const deleteStory = async (storyId, imageIndex) => {
         try {
             await crudStoryDelete.delete(storyId);
             queryClient.invalidateQueries("myStories");
@@ -266,15 +286,16 @@ const StoryApp = () => {
             console.error("Error deleting story:", error);
         }
     };
-
-    const viewStory = async (storyId) => {
+    
+    const viewStory = async (storyId, imageIndex) => {
         try {
-            await crudStoryView.create({ storyId });
+            await crudStoryView.create({ storyId, imageIndex });
             queryClient.invalidateQueries("storyfollowed");
         } catch (error) {
             console.error("Error viewing story:", error);
         }
     };
+    
 
     if (isLoadingMyStories || isLoadingFollowedStories) {
         return <div>Loading stories...</div>;
@@ -286,7 +307,7 @@ const StoryApp = () => {
 
     return (
         <div className="bg-gray-100">
-            <div className="w-full rounded-2xl bg-gradient-to-r from-violet-400 to-gray-800 text-white p-4 overflow-y-auto">
+            <div className="w-full bg-purple-50 text-black rounded-2xl border-1 border-[purple] shadow-lg shadow-purple-400 from-violet-400 to-gray-800  p-4 overflow-y-auto no-scrollbar">
                 <h2 className="text-2xl font-bold mb-6">Statut</h2>
                 <div className="flex gap-4 overflow-x-auto pb-4">
                     <div
@@ -318,7 +339,7 @@ const StoryApp = () => {
                         )}
                     </div>
                     {followedStories.length === 0 ? (
-                        <p className="text-center text-gray-400 self-center">
+                        <p className="text-center text-gray-500 self-center">
                             No stories available
                         </p>
                     ) : (
@@ -331,9 +352,8 @@ const StoryApp = () => {
                                 <img
                                     src={story.userImage}
                                     alt={story.userName}
-                                    className={`w-16 h-16 rounded-full border-2 ${
-                                        story.isRead ? "border-gray-300" : "border-teal-500"
-                                    }`}
+                                    className={`w-16 h-16 rounded-full border-2 ${story.isRead ? "border-gray-300" : "border-teal-500"
+                                        }`}
                                 />
                                 <span className="mt-1 text-sm">{story.userName}</span>
                             </div>
@@ -388,14 +408,16 @@ const StoryApp = () => {
                             <button
                                 className="bg-gray-300 text-gray-700 px-4 py-2 rounded mr-2"
                                 onClick={() => setIsNewStoryModalOpen(false)}
+                                disabled={isPosting}
                             >
                                 Cancel
                             </button>
                             <button
-                                className="bg-teal-500 text-white px-4 py-2 rounded"
+                                className={`bg-teal-500 text-white px-4 py-2 rounded ${isPosting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 onClick={handleStorySubmit}
+                                disabled={isPosting}
                             >
-                                Post
+                                {isPosting ? 'Posting...' : 'Post'}
                             </button>
                         </div>
                     </div>

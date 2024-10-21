@@ -1,22 +1,20 @@
 /* eslint-disable jsx-a11y/img-redundant-alt */
 import React, { useState } from 'react';
-import { Repeat, X } from 'lucide-react';
+import { Edit, Repeat } from 'lucide-react';
 import useCrud from "../../hooks/useCrudAxios";
 import AlertService from "../../services/notifications/AlertService";
 import { useActor } from "../../context/ActorContext";
 
 const RepostComponent = ({ post, repost }) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showDropdown, setShowDropdown] = useState(false);
     const [repostContent, setRepostContent] = useState('');
-    const [showCommentField, setShowCommentField] = useState(false);
-    
-    // Utiliser le post du repost si disponible, sinon utiliser le post directement
+    const [showModal, setShowModal] = useState(false);
+
     const targetPost = repost ? repost.post : post;
     const [repostCount, setRepostCount] = useState(targetPost?.repostCount || 0);
 
     const { create: createRepost } = useCrud(`reposts/repost/${targetPost?.id}`);
     const { actor, setActor } = useActor();
-
     const reposts = Array.isArray(actor.reposts) ? actor.reposts : [];
 
     const handleRepost = async (withComment = false) => {
@@ -43,136 +41,168 @@ const RepostComponent = ({ post, repost }) => {
             AlertService.error('Erreur lors du repost');
         }
     };
-    
+
     const handleCancelRepost = () => {
-        setIsModalOpen(false);
         setRepostContent('');
-        setShowCommentField(false);
+        setShowDropdown(false);
     };
 
-    function getTimeDifference(createdAt) {
+    const openModal = () => {
+        setShowModal(true);
+        setShowDropdown(false);
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        handleCancelRepost();
+    };
+
+    const getTimeDifference = (createdAt) => {
         const now = new Date();
-        const createdDate = new Date(createdAt);
-        const differenceInMilliseconds = now - createdDate;
+        const postDate = new Date(createdAt);
+        const diffInSeconds = (now - postDate) / 1000;
+        const diffInMinutes = diffInSeconds / 60;
+        const diffInHours = diffInMinutes / 60;
 
-        const minutes = Math.floor(differenceInMilliseconds / 60000);
-        const hours = Math.floor(differenceInMilliseconds / 3600000);
-        const days = Math.floor(differenceInMilliseconds / 86400000);
-
-        if (days > 0) {
-            return `${days} jour(s)`;
+        if (diffInMinutes < 60) {
+            return `${Math.floor(diffInMinutes)} minutes ago`;
+        } else if (diffInHours < 24) {
+            return `${Math.floor(diffInHours)} hours ago`;
+        } else {
+            return postDate.toLocaleDateString();
         }
-        if (hours > 0) {
-            return `${hours} heure(s)`;
-        }
-        return `${minutes} minute(s)`;
-    }
-
-    if (!targetPost) {
-        return null; // Ne rien rendre si aucun post n'est disponible
-    }
-
-    targetPost.getTimeDifference = getTimeDifference;
+    };
 
     return (
         <>
             <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => setShowDropdown(!showDropdown)}
                 className="flex items-center space-x-2 hover:text-blue-500 transition-colors"
             >
                 <Repeat className="h-5 w-5" />
                 <span>{repostCount || 0}</span>
             </button>
 
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-xl relative shadow-lg transform transition-all ease-in-out duration-300 scale-100">
+            {showDropdown && (
+                <div className="mt-12 -ml-6 bg-white border border-gray-200 rounded-b-lg shadow-lg p-4 absolute z-10 w-96">
+                    <button
+                        onClick={openModal}
+                        className="flex items-center w-full text-left p-2 space-x-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        <Edit className="text-blue-500 h-9 w-9" />
+                        <div>
+                            <p className="font-semibold">Reposter en donnant votre avis</p>
+                            <p className="text-sm text-gray-500">Créez un nouveau post en ajoutant un commentaire</p>
+                        </div>
+                    </button>
 
-                        <button
-                            onClick={handleCancelRepost}
-                            className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition-colors"
-                        >
-                            <X className="h-5 w-5" />
-                        </button>
+                    <button
+                        onClick={() => handleRepost(false)}
+                        className="flex items-center w-full text-left p-2 space-x-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        <Repeat className="text-blue-500 h-8 w-8" />
+                        <div>
+                            <p className="font-semibold">Reposter</p>
+                            <p className="text-sm text-gray-500">Diffusez instantanément le post</p>
+                        </div>
+                    </button>
+                </div>
+            )}
 
-                        <h3 className="text-xl font-semibold text-center mb-4">Reposter</h3>
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity duration-300 ease-out">
+                    <div className="bg-gradient-to-b from-gray-900 to-purple-900 rounded-xl shadow-lg p-6 text-white w-full max-w-4xl relative transform transition-transform duration-300 ease-out scale-95 hover:scale-100">
+                        <h2 className="text-2xl font-bold mb-4">Ajouter un commentaire</h2>
 
-                        {!showCommentField ? (
-                            <div className="space-y-4">
-                                <button
-                                    onClick={() => setShowCommentField(true)}
-                                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-                                >
-                                    Reposter en donnant votre avis
-                                </button>
+                        {/* Compteur de caractères */}
+                        <div className="mb-2 text-sm text-right text-gray-300">
+                            {repostContent.length}/280 caractères
+                        </div>
 
-                                <button
-                                    onClick={() => handleRepost(false)}
-                                    className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
-                                >
-                                    Reposter
-                                </button>
+                        {/* Système de validation */}
+                        <div className={`mb-4 ${repostContent.trim() === ""}`}>
+                            <textarea
+                                value={repostContent}
+                                onChange={(e) => setRepostContent(e.target.value)}
+                                placeholder="Ajouter un commentaire à votre repost..."
+                                className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:border-purple-500 focus:ring focus:ring-purple-400 shadow-sm outline-none resize-none transition-all duration-300 ease-in-out"
+                                rows="4"
+                                maxLength="280"
+                            />
+                            {repostContent.trim() === "" && (
+                                <p className="text-red-500 text-md ml-2 mt-1">Le champ ne peut pas être vide.</p>
+                            )}
+                        </div>
+
+                        {/* Prévisualisation en direct */}
+                        <div className="bg-gray-800 p-4 rounded-lg mb-4">
+                            <h3 className="font-semibold text-lg mb-2">Prévisualisation :</h3>
+                            <div className="border border-gray-700 rounded-xl p-3 text-sm">
+                                {repostContent.length > 0 ? (
+                                    <p>{repostContent}</p>
+                                ) : (
+                                    <p className="text-gray-500">Votre commentaire apparaîtra ici...</p>
+                                )}
                             </div>
-                        ) : (
-                            <>
-                                <div className="mb-4">
-                                    <textarea
-                                        value={repostContent}
-                                        onChange={(e) => setRepostContent(e.target.value)}
-                                        placeholder="Ajouter un commentaire à votre repost..."
-                                        className="w-full border border-gray-300 rounded-lg p-3 focus:border-blue-500 focus:ring focus:ring-blue-200 outline-none resize-none"
-                                        rows="4"
+                        </div>
+
+                        {/* Contenu du post original */}
+                        <div className="border rounded-xl p-4 bg-gray-800 mb-4 overflow-auto h-80">
+                            <h4 className="font-semibold mb-2">Post original :</h4>
+                            {post.user && (
+                                <div className="flex items-center mb-2">
+                                    <img
+                                        src={post.user.user.photo}
+                                        alt={`Profil de ${post.user.lastname}`}
+                                        className="w-8 h-8 rounded-full mr-2"
+                                    />
+                                    <div>
+                                        <h3 className="font-semibold">{post.user.user.firstname} {post.user.user.lastname}</h3>
+                                        <p className="text-sm">{getTimeDifference(post.createdAt)}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            <p className="mb-2">{post.description || 'Pas de contenu disponible pour ce post.'}</p>
+
+                            {post.photo && (
+                                <div className="my-2">
+                                    <img
+                                        src={post.photo}
+                                        alt="Image du post"
+                                        className="w-full h-auto rounded-lg shadow-md"
                                     />
                                 </div>
+                            )}
+                        </div>
 
-                                <div className="border rounded-lg p-4 bg-gray-100 mb-4 overflow-auto h-80">
-                                    <h4 className="font-semibold mb-2">Post original :</h4>
+                        {/* Ajout de bouton avec animation */}
+                        <div className="flex justify-between mt-4">
+                            <button
+                                onClick={closeModal}
+                                className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 hover:scale-105 transition-all duration-300 ease-in-out"
+                            >
+                                Annuler
+                            </button>
 
-                                    {post.user && (
-                                        <div className="flex items-center mb-2">
-                                            <img
-                                                src={post.user.user.photo}
-                                                alt={`Profil de ${post.user.lastname}`}
-                                                className="w-8 h-8 rounded-full mr-2"
-                                            />
-                                            <div>
-                                                <h3 className="font-semibold">{post.user.user.firstname} {post.user.user.lastname}</h3>
-                                                <p className="text-gray-500 text-sm">{post.getTimeDifference(post.createdAt)}</p>
-                                            </div>
-                                        </div>
-                                    )}
-                                    
-                                    <p>{post.description || 'Pas de contenu disponible pour ce post.'}</p><br />
-                                    {post.photo && (
-                                        <div className="mb-2">
-                                            <img
-                                                src={post.photo}
-                                                alt="Image du post"
-                                                className="w-full h-auto rounded-lg"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="flex justify-between">
-                                    <button
-                                        onClick={handleCancelRepost}
-                                        className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors"
-                                    >
-                                        Annuler
-                                    </button>
-                                    <button
-                                        onClick={() => handleRepost(true)}
-                                        className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-                                    >
-                                        Reposter
-                                    </button>
-                                </div>
-                            </>
-                        )}
+                            <button
+                                onClick={() => {
+                                    if (repostContent.trim() !== "") {
+                                        handleRepost(true);
+                                        closeModal();
+                                    }
+                                }}
+                                className={`bg-purple-700 text-white py-2 px-4 rounded-lg hover:bg-purple-800 hover:scale-105 transition-all duration-300 ease-in-out ${repostContent.trim() === "" ? "opacity-50 cursor-not-allowed" : ""
+                                    }`}
+                                disabled={repostContent.trim() === ""}
+                            >
+                                Reposter
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
+
         </>
     );
 };

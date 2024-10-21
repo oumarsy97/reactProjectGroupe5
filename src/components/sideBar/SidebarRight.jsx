@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Coins, Gift, History, ArrowLeft } from 'lucide-react';
+import { TrendingUp, Coins, Gift, History, ArrowLeft, Menu, X } from 'lucide-react';
 import useCrud from "../../hooks/useCrudAxios";
 import { useActor } from "../../context/ActorContext";
 import AlertService from "../../services/notifications/AlertService";
@@ -13,17 +13,15 @@ const SidebarRight = () => {
     const [purchaseCode, setPurchaseCode] = useState('');
     const { create: createCredit } = useCrud('users/achatcode');
     const { create: addCredit } = useCrud('users/ajoutercredits');
-
     const { actor, setActor } = useActor();
     const [loading, setLoading] = useState(false);
     const [isloading, setIsLoading] = useState(false);
-
-    // New state for credit history
     const [creditHistory, setCreditHistory] = useState([]);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [showPopup, setShowPopup] = useState(false);
     const CREDIT_RATE = 100;
 
     useEffect(() => {
-        // Load credit history from localStorage on component mount
         const storedHistory = localStorage.getItem(`creditHistory_${actor.id}`);
         if (storedHistory) {
             setCreditHistory(JSON.parse(storedHistory));
@@ -66,8 +64,6 @@ const SidebarRight = () => {
             AlertService.success('Ajout de crédits réussi!', 4000);
             setPurchaseCode('');
             setActor({ ...actor, credits: response.credits });
-
-            // Add to credit history
             addCreditHistoryEntry(response.credits - actor.credits);
         } catch (error) {
             await AlertService.error('Votre code est invalide');
@@ -110,6 +106,7 @@ const SidebarRight = () => {
         if (isNaN(amount) || amount <= 0) return 0;
         return Math.floor(amount / CREDIT_RATE);
     };
+
     const hundlAchat = async () => {
         if (purchaseAmount < 100) {
             await AlertService.error('Veuillez saisir un montant valide minmimum 100fr');
@@ -117,7 +114,6 @@ const SidebarRight = () => {
         }
         setLoading(true);
         await createCredit({ montant: +purchaseAmount });
-        // console.log(response);
         AlertService.success('Achat réussi veuillez consulter votre email ou votre téléphone pour voir votre code ! ', 4000);
         setLoading(false);
         setPurchaseAmount(0);
@@ -128,8 +124,12 @@ const SidebarRight = () => {
         setPurchaseCode(value);
     }
 
+    const toggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
+    };
+
     const renderCreditHistory = () => (
-        <div className="mt-4 bg-white/10 rounded-lg p-4 backdrop-blur-sm max-h-60 overflow-y-auto">
+        <div className="mt-4 bg-white/10 rounded-lg p-4 backdrop-blur-sm max-h-60 no-scrollbar overflow-y-auto">
             {creditHistory.map((transaction, index) => (
                 <div
                     key={index}
@@ -241,24 +241,6 @@ const SidebarRight = () => {
                             <Gift className="h-5 w-5 text-yellow-300" />
                         </div>
 
-                        {showCreditHistory && (
-                            <div className="mt-4 bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-                                {creditHistory.map((transaction, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-center justify-between py-2 border-b border-white/10 last:border-0"
-                                    >
-                                        <div>
-                                            <p className="text-sm">{transaction.type}</p>
-                                            <p className="text-xs text-white/70">{transaction.date}</p>
-                                        </div>
-                                        <div className={`font-bold ${transaction.amount > 0 ? 'text-green-300' : 'text-red-300'}`}>
-                                            {transaction.amount > 0 ? '+' : ''}{transaction.amount}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                         {showCreditHistory && renderCreditHistory()}
                     </>
                 );
@@ -266,9 +248,6 @@ const SidebarRight = () => {
     };
 
     const CreatorsToFollow = ({ creators }) => {
-        const [showPopup, setShowPopup] = useState(false);
-
-        // Limiter l'affichage à 3 créateurs
         const displayedCreators = creators.slice(0, 2);
 
         return (
@@ -305,46 +284,73 @@ const SidebarRight = () => {
                         Voir plus
                     </button>
                 )}
-                {showPopup && (
-                    <FollowersPopup
-                        onClose={() => setShowPopup(false)}
-                        initialTab="suggested"
-                    />
-                )}
             </div>
         );
     };
 
     return (
-        <div className="col-span-3">
-            <div className="space-y-4 fixed top-24">
-                {/* Section Crédits */}
-                <div className="bg-gradient-to-b from-black to-purple-900 rounded-xl shadow-lg p-6 text-white">
-                    {actor && renderCreditSection()}
-                    {!actor && <ProfileChangeForm />}
-                </div>
+        <>
+            {/* Bouton de menu mobile */}
+            <button
+                className="fixed top-20 right-4 xl:inline xl:hidden bg-purple-600 text-white p-2 rounded-full shadow-xl"
+                style={{ zIndex: 45 }} onClick={toggleMenu}
+            >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
 
-                {/* Tendances */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-serif text-lg font-semibold">Tendances</h3>
-                        <TrendingUp className="h-5 w-5" />
+
+            {/* Contenu de la sidebar */}
+            <div className={`
+                fixed top-16 bottom-10 inset-0 bg-white z-40 lg:rounded-3xl
+                transition-transform duration-300 ease-in-out
+                xl:col-span-3 xl:block xl:overflow-visible xl:h-auto md:bottom-10 xl:static
+                ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}
+                xl:translate-x-0
+            `}>
+                <div className="p-6 space-y-4 lg:top-24">
+                    {/* Section Crédits */}
+                    <div className="bg-gradient-to-b from-black to-purple-900 rounded-xl shadow-lg p-6 text-white">
+                        {actor && renderCreditSection()}
+                        {!actor && <ProfileChangeForm />}
                     </div>
-                    {trends.map((trend) => (
-                        <div
-                            key={trend.tag}
-                            className="py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
-                        >
-                            <p className="font-medium text-gray-900">{trend.tag}</p>
-                            <p className="text-sm text-gray-500">{trend.posts} posts</p>
-                        </div>
-                    ))}
-                </div>
 
-                {/* Suggestions */}
-                <CreatorsToFollow creators={creators} />
+                    {/* Tendances */}
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-serif text-lg font-semibold">Tendances</h3>
+                            <TrendingUp className="h-5 w-5" />
+                        </div>
+                        {trends.map((trend) => (
+                            <div
+                                key={trend.tag}
+                                className="py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                            >
+                                <p className="font-medium text-gray-900">{trend.tag}</p>
+                                <p className="text-sm text-gray-500">{trend.posts} posts</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Suggestions */}
+                    <CreatorsToFollow creators={creators} />
+                </div>
             </div>
-        </div>
+
+
+            {/* Overlay pour fermer le menu sur mobile */}
+            {isMenuOpen && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+                    onClick={toggleMenu}
+                />
+            )}
+            {showPopup && (
+                <FollowersPopup
+                    onClose={() => setShowPopup(false)}
+                    initialTab="suggested"
+                />
+            )}
+        </>
     );
 };
 

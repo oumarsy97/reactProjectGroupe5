@@ -1,9 +1,12 @@
 import React from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, DollarSign, Box } from 'lucide-react';
 import {getTimeDifference} from "../../utils/tokenUtils";
+import StarRating from "../Post/Note";
+import {useAuth} from "../../context/AuthContext";
 
 const SwingProduit = ({ produit }) => {
     const {
+        id,
         libelle,
         description,
         image,
@@ -14,6 +17,7 @@ const SwingProduit = ({ produit }) => {
         notes,
         commandes
     } = produit;
+    const { user } = useAuth();
 
     const timeAgo = new Date(createdAt).toLocaleDateString();
 
@@ -30,6 +34,7 @@ const SwingProduit = ({ produit }) => {
                         <h3 className="font-medium">{`${vendor.user.firstname} ${vendor.user.lastname}`}</h3>
                         <p className="text-gray-500 text-sm">{getTimeDifference(createdAt)}</p>
                     </div>
+                    <StarRating  idPost={id} idUser={user.id}/>
                 </div>
                 <h2 className="mt-4 text-xl font-semibold">{libelle}</h2>
                 <p className="mt-2">{description}</p>

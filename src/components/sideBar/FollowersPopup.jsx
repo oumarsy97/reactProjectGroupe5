@@ -1,54 +1,151 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
+import { useAuth } from "../../context/AuthContext";
+import { useActor } from "../../context/ActorContext";
+import AlertService from "../../services/notifications/AlertService";
+import useCrud from "../../hooks/useCrudAxios";
 
-// Composant pour afficher un seul utilisateur dans la liste
-const UserItem = ({ user, isFollowing }) => (
+const UserItem = ({ user, isFollowing, onToggleFollow }) => (
   <div className="flex items-center justify-between py-2">
     <div className="flex items-center">
-      <img src={user.avatar} alt={user.username} className="w-10 h-10 rounded-full mr-3" />
+      <img src={user.photo} alt={user.firstname} className="w-10 h-10 rounded-full mr-3" />
       <div>
-        <p className="font-semibold text-gray-700">{user.username}</p>
-        <p className="text-sm text-gray-500">{user.fullName}</p>
+        <p className="font-semibold text-gray-700">{user.firstname} {user.lastname}</p>
+        <p className="text-sm text-gray-500">{user.role}</p>
       </div>
     </div>
-    <button className={`px-3 py-1 rounded ${isFollowing ? 'bg-gray-200 text-black' : 'bg-purple-600 text-white hover:bg-purple-700 transition duration-200'}`}>
-      {isFollowing ? 'Suivi' : 'Abonné'}
+    <button 
+      onClick={() => onToggleFollow(user.id, isFollowing)}
+      className={`px-3 py-1 rounded ${isFollowing ? 'bg-gray-200 text-black' : 'bg-purple-600 text-white hover:bg-purple-700 transition duration-200'}`}
+    >
+      {isFollowing ? 'Suivi' : 'Suivre'}
     </button>
   </div>
 );
 
-// Composant principal du popup
-const FollowersPopup = ({ onClose, initialTab }) => {
-  // État pour gérer l'onglet actif
-  const [activeTab, setActiveTab] = useState(initialTab);
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center h-48">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+  </div>
+);
 
-  // Données simulées des utilisateurs (à remplacer par des données réelles)
-  const [users, setUsers] = useState({
-    followers: [
-      { id: 1, username: 'FATFIT', fullName: 'faty.fit', avatar: '/api/placeholder/30/30' },
-      { id: 2, username: 'Angelique Boyer', fullName: 'angeliqueboyertiktok', avatar: '/api/placeholder/30/30' },
-    ],
-    following: [
-      { id: 3, username: 'Lastgirlbree', fullName: 'lastgirlbree001', avatar: '/api/placeholder/30/30' },
-      { id: 4, username: 'Liinda_beautyy', fullName: 'liinda_beautyy', avatar: '/api/placeholder/30/30' },
-    ],
-    suggested: [
-      { id: 5, username: 'Lyricsen_221', fullName: 'lyrics_senegal_221', avatar: '/api/placeholder/30/30' },
-      { id: 6, username: 'Sophia Diamond beauty', fullName: 'sophiadiamondbeautyspa', avatar: '/api/placeholder/30/30' },
-    ]
-  });
+const FollowersPopup = ({ onClose, initialTab }) => {
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const { actor } = useActor();
+  const {user} = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [tabData, setTabData] = useState([]);
+  
+  const followApi = useCrud('follow');
+  const [suggestedUsers, setSuggestedUsers] = useState([]);
+
+  // Fonction pour charger les utilisateurs suggérés
+  const fetchSuggestedUsers = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const suggested = await followApi.get('/suggested');
+      setSuggestedUsers(suggested);
+    } catch (error) {
+      AlertService.error("Erreur lors du chargement des utilisateurs suggérés");
+      console.error("Erreur de chargement:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [followApi]);
+
+  // Effet pour charger les données initiales quand l'onglet change
+  useEffect(() => {
+    const loadTabData = () => {
+      setIsLoading(true);
+      let data = [];
+
+      // Vérifiez si actor est défini
+      if (!actor || !actor.follow) {
+        console.warn('actor.follow est vide ou non défini'); // Debug: Vérifier si actor.follow est présent
+        setTabData([]);
+        setIsLoading(false);
+        return;
+      }
+
+      switch (activeTab) {
+        case 'followers':
+          // Les utilisateurs qui suivent l'acteur courant
+          data = actor.follow
+            .map(follow => ({
+              id: follow.user.id, // Utilisation de follow au lieu de user
+              firstname: follow.user.firstname,
+              lastname: follow.user.lastname,
+              photo: follow.user.photo || '',
+              role: follow.user.role,
+              isFollowing: true // tous ceux qui sont des abonnés sont déjà suivis
+            }));
+          break;
+        case 'following':
+          // Les utilisateurs que l'acteur suit
+          data = user.follow
+            .map(follow => ({
+              id: follow.user.id, // Utilisation de follow au lieu de user
+              firstname: follow.user.firstname,
+              lastname: follow.user.lastname,
+              photo: follow.user.photo || '',
+              role: follow.user.role,
+              isFollowing: true
+            }));
+          break;
+        case 'suggested':
+          data = suggestedUsers; // Utilisateurs suggérés
+          break;
+        default:
+          data = [];
+      }
+      setTabData(data);
+      setIsLoading(false);
+    };
+
+    loadTabData();
+  }, [activeTab, actor, suggestedUsers]);
+
+  const handleToggleFollow = async (userId, isCurrentlyFollowing) => {
+    if (!actor) return;
+    try {
+      if (isCurrentlyFollowing) {
+        await followApi.remove(userId);
+        // Mettre à jour actor.follow localement
+        actor.follow = actor.follow.filter(f => f.user.id !== userId);
+      } else {
+        const newFollow = await followApi.create({ followedId: userId });
+        actor.follow.push(newFollow);
+      }
+      
+      // Recharger les données de l'onglet actif
+      if (activeTab === 'suggested') {
+        fetchSuggestedUsers();
+      } else {
+        setTabData(current => 
+          current.map(user => 
+            user.id === userId 
+              ? { ...user, isFollowing: !isCurrentlyFollowing }
+              : user
+          )
+        );
+      }
+      
+      AlertService.success(isCurrentlyFollowing ? "Désabonné avec succès" : "Abonné avec succès");
+    } catch (error) {
+      AlertService.error("Erreur lors de la modification de l'abonnement");
+      console.error("Erreur d'abonnement:", error);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[9999] transition-opacity duration-300">
       <div className="bg-white rounded-lg w-[500px] max-h-[80vh] h-[700px] overflow-hidden shadow-2xl">
-        {/* En-tête du popup */}
         <div className="flex justify-between items-center p-4 bg-gradient-to-r from-violet-500 to-purple-600 text-white">
-          <h2 className="text-lg font-semibold">khadijahh_g20</h2>
+          <h2 className="text-lg font-semibold">Gestion des abonnements</h2>
           <button onClick={onClose} className="text-white hover:text-gray-200 transition">
             <X className="w-6 h-6" />
           </button>
         </div>
-        {/* Onglets */}
         <div className="flex bg-gray-100">
           {['followers', 'following', 'suggested'].map((tab) => (
             <button
@@ -60,11 +157,21 @@ const FollowersPopup = ({ onClose, initialTab }) => {
             </button>
           ))}
         </div>
-        {/* Liste des utilisateurs */}
         <div className="overflow-y-auto max-h-[60vh] p-4 space-y-4">
-          {users[activeTab].map(user => (
-            <UserItem key={user.id} user={user} isFollowing={activeTab !== 'followers'} />
-          ))}
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : tabData.length > 0 ? (
+            tabData.map(user => (
+              <UserItem 
+                key={user.id} 
+                user={user} 
+                isFollowing={user.isFollowing}
+                onToggleFollow={handleToggleFollow}
+              />
+            ))
+          ) : (
+            <p className="text-center text-gray-500">Aucun utilisateur à afficher</p>
+          )}
         </div>
       </div>
     </div>

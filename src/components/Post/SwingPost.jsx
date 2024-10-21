@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Heart, Share2, Bookmark, UserPlus, UserCheck, MessageCircle, Eye, MoreVertical, Flag, Trash2 } from 'lucide-react';
+import { Heart, Share2, Bookmark, UserPlus, UserCheck, MessageCircle, Eye, MoreVertical, Flag } from 'lucide-react';
 import { getTimeDifference } from "../../utils/tokenUtils";
 import useCrud from "../../hooks/useCrudAxios";
 import { useAuth } from "../../context/AuthContext";
@@ -11,7 +11,7 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-const SewingPost = ({ post, onDelete }) => {
+const PostSwing = ({ post }) => {
     const {
         id,
         title,
@@ -33,19 +33,16 @@ const SewingPost = ({ post, onDelete }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isLiked, setIsLiked] = useState(likes.some(like => like.idUser === currentUser.id));
     const [likeCount, setLikeCount] = useState(likes.length);
-    const { create: createLike, delete: deletePost } = useCrud(`posts/${id}`);
+    const { create: createLike } = useCrud(`posts/like/${id}`);
     const { create: toggleFollow } = useCrud(`follows/follow/${user.id}`);
     const [showComments, setShowComments] = useState(false);
     const [comments, setComments] = useState([]);
     const { create: createComment } = useCrud(`posts/comment/${id}`);
     const crudComment = useCrud(`posts/comment/${id}`);
 
-
     const [isFollowing, setIsFollowing] = useState(currentUser.follow.some(fol => fol.idActor === id));
     const [isFavorited, setIsFavorited] = useState(post.favoris ? post.favoris.some(fav => fav.idUser === currentUser.id) : false);
     const { create: createFavorite } = useCrud(`posts/favoris/${id}`);
-    const { create: reportPost } = useCrud(`posts/report/${id}`);
-    const [hasReported, setHasReported] = useState(false); // Ajout d'un état pour le signalement
 
     useEffect(() => {
         const fetchComments = async () => {
@@ -85,14 +82,24 @@ const SewingPost = ({ post, onDelete }) => {
         const newIsLiked = !isLiked;
         setIsLiked(newIsLiked);
 
-        const data = await createLike([], true);
+        try {
+            const data = await createLike([], true);
 
-        if (data) {
-            setLikes(prevLikes => [...prevLikes, data]);
-            setLikeCount(prevCount => prevCount + 1);
-        } else {
-            setLikes(prevLikes => prevLikes.filter(like => like.idUser !== currentUser.id));
-            setLikeCount(prevCount => prevCount - 1);
+            if (data) {
+                setLikes(prevLikes => [...prevLikes, data]);
+                setLikeCount(prevCount => prevCount + 1);
+            } else {
+                setLikes(prevLikes => prevLikes.filter(like => like.idUser !== currentUser.id));
+                setLikeCount(prevCount => prevCount - 1);
+            }
+        } catch (error) {
+            console.error("Error toggling like status:", error);
+            setIsLiked(!newIsLiked); // Revert the like status
+            if (error.response && error.response.status === 404) {
+                AlertService.error("Le post n'a pas été trouvé. Il a peut-être été supprimé.");
+            } else {
+                AlertService.error("Une erreur est survenue lors de la mise à jour du like. Veuillez réessayer.");
+            }
         }
     };
 
@@ -142,35 +149,6 @@ const SewingPost = ({ post, onDelete }) => {
         }
     };
 
-    const handleDeletePost = async () => {
-        try {
-            await deletePost();
-            onDelete(id);
-            AlertService.success("Post supprimé avec succès");
-        } catch (error) {
-            console.error("Erreur lors de la suppression du post:", error);
-            AlertService.error("Échec de la suppression du post");
-        }
-    };
-
-    const handleReportPost = async () => {
-        if (hasReported) {
-            AlertService.error("Vous avez déjà signalé ce post.");
-            return;
-        }
-
-        setDropdownOpen(false);
-
-        try {
-            await reportPost();
-            setHasReported(true);
-            AlertService.success("Post signalé avec succès");
-        } catch (error) {
-            console.error("Erreur lors du signalement du post:", error);
-            AlertService.error("Échec du signalement du post");
-        }
-    };
-
     useEffect(() => {
         if (videoRef.current) {
             videoRef.current.defaultMuted = false;
@@ -213,11 +191,11 @@ const SewingPost = ({ post, onDelete }) => {
     }, [incrementViews, hasViewed]);
 
     return (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden" ref={postRef}>
-            <div className="p-6">
+        <div ref={postRef} className="bg-white rounded-xl shadow-sm overflow-hidden h-screen flex flex-col">
+            <div className="p-4 flex-grow">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                        <div className="h-12 w-12 mb-4 rounded-full bg-gradient-to-r from-rose-400 to-purple-400 p-0.5">
+                        <div className="h-12 w-12 rounded-full bg-gradient-to-r from-rose-400 to-purple-400 p-0.5">
                             <div className="h-full w-full rounded-full relative overflow-hidden bg-white">
                                 <img src={user.user.photo} alt="Profile" className="rounded-full" />
                             </div>
@@ -230,8 +208,8 @@ const SewingPost = ({ post, onDelete }) => {
                     <button
                         onClick={handleFollowClick}
                         className={`flex items-center px-4 py-1 text-white text-sm font-medium rounded-full ${isFollowing
-                            ? 'bg-gray-500 hover:bg-gray-600'
-                            : 'bg-gradient-to-br from-black to-purple-900 hover:opacity-90'
+                                ? 'bg-gray-500 hover:bg-gray-600'
+                                : 'bg-gradient-to-br from-black to-purple-900 hover:opacity-90'
                             } transition-all duration-200`}
                     >
                         {isFollowing ? (
@@ -251,35 +229,35 @@ const SewingPost = ({ post, onDelete }) => {
                 <p className="font-bold mt-2">{title}</p>
                 <p className="mt-4">{description}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
-                    {Array.isArray(tags) ? tags.map((tag, index) => (
-                        <span key={index} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-                            #{typeof tag === 'string' ? tag : (tag.name || 'Unknown')}
+                    {tags.map((tag) => (
+                        <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                            #{tag}
                         </span>
-                    )) : null}
+                    ))}
                 </div>
             </div>
 
             {photo && (
-                <div className="media-container">
+                <div className="flex justify-center items-center bg-gray-100 flex-grow">
                     {isVideo(photo) ? (
                         <video
                             ref={videoRef}
                             controls
-                            className="w-full"
+                            className="w-full h-full object-cover"
                             playsInline
                             preload="metadata"
-                            muted={false}
+                            muted
                         >
                             <source src={photo} type="video/mp4" />
                             Votre navigateur ne supporte pas la lecture de vidéos.
                         </video>
                     ) : (
-                        <img src={photo} alt="Post" className="w-full" />
+                        <img src={photo} alt="Post" className="w-full h-full object-cover" />
                     )}
                 </div>
             )}
 
-            <div className="p-6 border-t border-gray-100">
+            <div className="p-4 border-t border-gray-100">
                 <div className="flex justify-between text-gray-600">
                     <button
                         className={`flex items-center space-x-2 transition-colors ${isLiked ? 'text-rose-500' : 'hover:text-rose-500'}`}
@@ -308,6 +286,7 @@ const SewingPost = ({ post, onDelete }) => {
                             <MoreVertical className="h-6 w-6" />
                         </button>
 
+                        {/* Dropdown menu now opens upwards */}
                         {dropdownOpen && (
                             <div className="absolute right-0 bottom-full mb-2 w-44 bg-white rounded-lg shadow-lg py-2">
                                 <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:bg-gray-200 w-full">
@@ -318,19 +297,10 @@ const SewingPost = ({ post, onDelete }) => {
                                     <Bookmark className="h-5 w-5" fill={isFavorited ? "currentColor" : "none"} />
                                     <span>Enregistrer</span>
                                 </button>
-                                <button
-                                    className={`flex items-center space-x-2 px-4 py-2 text-gray-600 hover:bg-gray-200 w-full ${hasReported ? 'text-rose-500' : ''}`}
-                                    onClick={handleReportPost}
-                                >
-                                    <Flag className="h-5 w-5" fill={hasReported ? "currentColor" : "none"} />
+                                <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:bg-gray-200 w-full">
+                                    <Flag className="h-5 w-5" />
                                     <span>Signaler</span>
                                 </button>
-                                {currentUser.id === user.id && (
-                                    <button className="flex items-center space-x-2 px-4 py-2 text-red-600 hover:bg-gray-200 w-full" onClick={handleDeletePost}>
-                                        <Trash2 className="h-5 w-5" />
-                                        <span>Supprimer</span>
-                                    </button>
-                                )}
                             </div>
                         )}
                     </div>
@@ -351,4 +321,4 @@ const SewingPost = ({ post, onDelete }) => {
     );
 };
 
-export default SewingPost;
+export default PostSwing;

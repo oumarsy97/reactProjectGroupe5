@@ -16,6 +16,7 @@ const Signup = () => {
         genre: 'MALE',
         role: 'CLIENT',
         bio: '',
+        photo: '',
     });
     const [photo, setPhoto] = useState(null);  // For file handling
     const [error, setError] = useState(null);
@@ -46,18 +47,21 @@ const Signup = () => {
             return;
         }
 
-        const formPayload = new FormData();  // Create FormData
+        const formPayload = new FormData();
         Object.keys(formData).forEach(key => formPayload.append(key, formData[key]));
         if (photo) {
-            formPayload.append('photo', photo);  // Append photo to FormData
+            formPayload.append('photo', photo);
         }
+
+        console.log('Form Payload:', photo);
 
         try {
             let data ;
+            console.log(formData);
             if (formData.role === 'CLIENT') {
                 //   data = await createUser(formPayload);  // Send as FormData
                 data = await createUser(formPayload, true);
-                console.log(data);
+                //console.log(data);
 
             } else {
                 //  data = await createActor(formPayload);

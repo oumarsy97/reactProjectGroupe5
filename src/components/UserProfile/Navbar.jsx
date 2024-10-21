@@ -8,6 +8,8 @@ import AddProduitModal from "../Produits/AddProduit";
 import ProgressiveUserSearch from "../search/ProgressiveUserSearch";
 import {useToken} from "../../context/TokenContext";
 import ChatPopup from "../chat/ChatComponent";
+import CommandeDetails from '../Commandes/commande';
+import CommandeClient from '../Achats/CommandeClient';
 import AlertService from "../../services/notifications/AlertService";
 
 const Navbar = () => {
@@ -125,7 +127,7 @@ const Navbar = () => {
     );
 };
 
-const NavItem = ({icon, text}) => (
+const NavItem = ({icon, text, onclick}) => (
     <button
         className="flex flex-col items-center space-x-1 p-2 rounded-full hover:bg-[#0077be] hover:bg-opacity-50 transition-colors duration-200">
         {icon}

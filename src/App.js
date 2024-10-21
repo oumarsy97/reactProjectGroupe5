@@ -11,10 +11,10 @@ import SewingNetwork from './components/Accueil';
 import UserDetail from "./components/UserDetail";
 import ChatPopup from "./components/chat/ChatComponent";
 import Chat from "./components/chat/Chat";
+import CommandeDetails from './components/Commandes/commande';
+import CommandeClient from './components/Achats/CommandeClient';
 
-// Créez une instance de QueryClient
 const queryClient = new QueryClient();
-
 
 function App() {
 
@@ -35,6 +35,16 @@ function App() {
                                             <ProtectedRoute>
                                             <UserDetail />
                                            </ProtectedRoute>
+                                        } />
+                                        <Route path="/achats" element={
+                                            <ProtectedRoute>
+                                                <commandeClient />
+                                            </ProtectedRoute>
+                                        } />
+                                        <Route path="/commandes" element={
+                                            <ProtectedRoute>
+                                                <CommandeDetails />
+                                            </ProtectedRoute>
                                         } />
                                 <Route path="/" element={
                                     <ProtectedRoute>

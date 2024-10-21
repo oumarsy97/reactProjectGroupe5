@@ -62,7 +62,6 @@ const Login = () => {
                 const data = await AuthService.login(credentials.email, credentials.password);
                 setToken(data.token);
                 // Attendre que le token soit correctement stocké
-                await new Promise(resolve => setTimeout(resolve, 1000));
                 await loadUserData(data.token);
                 setIsAuthenticated(true);
                 navigate('/');
@@ -71,14 +70,17 @@ const Login = () => {
                 // Logique d'inscription si nécessaire
             }
         } catch (err) {
-            if (err.response && err.response.status === 401) {
-                setError("Email ou mot de passe incorrect");
+
+            if (err.response && err.response.data.status === 401) {
+                await AlertService.error("Email ou mot de passe incorrect");
+                setLoading(false);
+
             } else {
                 setError("Une erreur est survenue. Veuillez réessayer.");
             }
-            AlertService.error(error);
+
         } finally {
-            setLoading(false);
+
         }
     };
 

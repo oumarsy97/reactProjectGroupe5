@@ -11,6 +11,7 @@ import ChatPopup from "../chat/ChatComponent";
 import CommandeDetails from '../Commandes/commande';
 import CommandeClient from '../Achats/CommandeClient';
 import AlertService from "../../services/notifications/AlertService";
+import ChatApp from "../chat/ChatApp";
 
 const Navbar = () => {
     const { user, logout } = useAuth();
@@ -52,7 +53,7 @@ const Navbar = () => {
                     {actor && (user.role === "VENDOR" ? <AddProduitModal/> : <AddPostModal/>)}
                     <NavItem icon={<Users size={20}/>} text="Communauté"/>
                     <NavItem icon={<Star size={20}/>} text="Favoris"/>
-                    <NavItem icon={<MessageCircle size={20}/>} text="Messages"/>
+                    <ChatApp />
                     <NavItem icon={<ShoppingCart size={20}/>} text="Achats"/>
 
                     <button className="relative p-2 rounded-full hover:bg-purple-700 transition-colors duration-200">

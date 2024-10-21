@@ -59,7 +59,7 @@ const Chat = ({ selectedUser, onBackToList }) => {
     };
 
     return selectedUser && (
-        <div className="flex flex-col h-full ">
+        <div className="flex flex-col h-full">
             <div className="p-4 border-b border-gray-200 text-black flex items-center">
                 <button
                     onClick={onBackToList}
@@ -104,8 +104,8 @@ const Chat = ({ selectedUser, onBackToList }) => {
                 ))}
                 <div ref={messagesEndRef} />
             </div>
-            <div className="p-4 bg-purple-200 border-t border-gray-200">
-                <div className="flex items-center space-x-4">
+            <div className="py-4 bg-purple-200 border-t border-gray-200">
+                <div className="flex items-center space-x-2">
                     <button
                         className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
                         onClick={() => fileInputRef.current?.click()}

@@ -107,9 +107,9 @@ export default function AddPostModal() {
     }
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-5xl flex">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-5xl flex flex-col lg:flex-row">
                 {/* Image section */}
-                <div className="w-1/3 p-6 flex items-center justify-center">
+                <div className="w-full lg:w-1/3 p-6 flex items-center justify-center">
                     <div className="relative w-full h-full">
                         <input
                             type="file"
@@ -156,7 +156,7 @@ export default function AddPostModal() {
                 </div>
 
                 {/* Form section */}
-                <div className="w-2/3 p-6">
+                <div className="w-full lg:w-2/3 p-6">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                         Créer une publication
                     </h2>
@@ -192,7 +192,7 @@ export default function AddPostModal() {
                         </div>
 
                         <div className="flex gap-4">
-                            <div className="w-1/2">
+                            <div className="w-full lg:w-1/2">
                                 <label htmlFor="category" className="text-lg font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                     <Sparkles className="w-5 h-5 text-blue-500" />
                                     Catégorie
@@ -207,7 +207,7 @@ export default function AddPostModal() {
                                     required
                                 />
                             </div>
-                            <div className="w-1/2">
+                            <div className="w-full lg:w-1/2">
                                 <label htmlFor="size" className="text-lg font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                     <Maximize className="w-5 h-5 text-blue-500" />
                                     Taille
@@ -238,33 +238,37 @@ export default function AddPostModal() {
                                 value={formData.tags}
                                 onChange={handleInputChange}
                                 className="mt-2 w-full border-2 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 bg-gray-50 dark:bg-gray-800"
-                                placeholder="design, inspiration, créativité..."
+                                placeholder="design, création..."
                                 required
                             />
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-6">
+                        <div className="flex justify-between mt-6">
                             <button
                                 type="button"
-                                onClick={() => {
-                                    setIsOpen(false);
-                                    resetForm();
-                                }}
-                                className="px-6 py-2 rounded-xl border border-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-300"
+                                onClick={() => setIsOpen(false)}
+                                className="bg-gray-300 text-gray-800 rounded-xl px-4 py-2 hover:bg-gray-400 transition-colors duration-300"
                             >
                                 Annuler
                             </button>
-
                             <button
                                 type="submit"
-                                className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 hover:from-blue-700 hover:via-purple-700 hover:to-pink-600 text-white px-6 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className={`bg-blue-600 text-white rounded-xl px-4 py-2 hover:bg-blue-700 transition-colors duration-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 disabled={isLoading}
                             >
-                                {isLoading ? 'Publication en cours...' : 'Publier'}
+                                {isLoading ? 'Création...' : 'Créer le post'}
                             </button>
                         </div>
                     </form>
                 </div>
+
+                {/* Close button for mobile */}
+                <button
+                    onClick={() => setIsOpen(false)}
+                    className="absolute top-4 right-4 lg:hidden p-2 text-gray-700 hover:bg-gray-300 rounded-full transition-colors duration-300"
+                >
+                    <X className="w-5 h-5" />
+                </button>
             </div>
         </div>
     );

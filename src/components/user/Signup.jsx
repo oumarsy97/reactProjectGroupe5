@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Camera } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Login from '../Login';
 import AlertService from "../../services/notifications/AlertService";
 import useCrud from "../../hooks/useCrudAxios";
@@ -83,9 +84,14 @@ const Signup = () => {
     }
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center p-4">
-            <div className="max-w-6xl w-full bg-white rounded-xl shadow-lg flex flex-col lg:flex-row">
-                <div className="w-full lg:w-1/2 p-8 flex flex-col justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto no-scrollbar h-full w-full flex justify-center items-center p-4">
+            <div className="max-w-6xl w-full bg-gradient-to-r from-purple-900 to-indigo-900 rounded-xl shadow-lg flex flex-col lg:flex-row overflow-hidden relative">
+                <motion.div
+                    className="w-full lg:w-1/2 p-8 flex flex-col justify-center lg:bg-white static z-10"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: 0 }}
+                    transition={{ delay: 0.2, duration: 1, ease: "easeOut" }}
+                >
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Inscription</h2>
                     {error && <p className="text-red-500 text-center mb-4">{error}</p>}
                     <form className="space-y-4" onSubmit={handleSubmit}>
@@ -107,6 +113,7 @@ const Signup = () => {
                                 onChange={handleInputChange}
                             />
                         </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <input
                             type="email"
                             name="email"
@@ -123,6 +130,7 @@ const Signup = () => {
                             value={formData.phone}
                             onChange={handleInputChange}
                         />
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <input
                                 type="password"
@@ -229,17 +237,23 @@ const Signup = () => {
                             Inscription
                         </button>
                     </div>
-                </div>
-                <div className="hidden lg:block w-1/2 relative rounded-r-xl overflow-hidden bg-gradient-to-r from-purple-900 to-indigo-900">
-                    <img
+                </motion.div>
+                <div className="hidden lg:block w-1/2 rounded-r-xl overflow-hidden bg-gradient-to-r from-purple-900 to-indigo-900">
+                    <motion.img
                         src="./images/ciseau.png"
                         alt="ciseau"
-                        className="absolute left-0 top-0 h-full object-cover transform -translate-x-1/2"
+                        className="absolute h-full z-0"
+                        initial={{ x: '-200%' }}
+                        animate={{ x: '-50%' }}
+                        transition={{ duration: 1, ease: 'easeOut' }}
                     />
-                    <img
-                        src='./images/logoo.png'
+                    <motion.img
+                        src="./images/logoo.png"
                         alt="Logo"
-                        className="absolute top-1/2 left-1/2 transform -translate-x-1/5 -translate-y-2/3 w-48"
+                        className="absolute top-1/4 left-3/4 transform -translate-x-1/2 -translate-y-1/2 w-48"
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5, duration: 4, ease: 'easeOut' }}
                     />
                 </div>
             </div>

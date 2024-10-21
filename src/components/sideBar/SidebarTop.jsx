@@ -14,7 +14,6 @@ const SidebarTop = ({ activeFilter, setActiveFilter, className, sticky = true })
                     activeFilter={activeFilter}
                     setActiveFilter={setActiveFilter}
                 />
-                {/* Espace pour du contenu supplémentaire */}
             </div>
         </div>
     );

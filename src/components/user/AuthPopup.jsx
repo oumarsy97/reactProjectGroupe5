@@ -67,7 +67,7 @@ const AuthPopup = ({
         );
       default:
         return (
-          <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
+          <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto no-scrollbar h-full w-full flex justify-center items-center">
             <div className="max-w-8xl w-1/2 h-[600px] bg-white pl-8 rounded-xl shadow-lg flex">
               <div className="w-[30%] z-[2] flex flex-col justify-center items-center">
                 <h2 className="text-2xl mb-10 font-bold text-gray-900">Page de Connexion</h2>
@@ -152,7 +152,7 @@ const AuthPopup = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gradient-to-b from-black to-purple-900 text-white max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-gradient-to-b from-black to-purple-900 text-white max-w-md w-full max-h-[90vh] overflow-y-auto no-scrollbar">
         <DialogHeader>
           <DialogTitle className="text-white">
             {activeForm === 'login' ? 'Connexion' :

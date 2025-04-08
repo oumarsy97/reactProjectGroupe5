@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useCrud from "../../hooks/useCrudAxios";
+import Load from "../chat/Load";
 
 const ProgressiveUserSearch = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -73,7 +74,7 @@ const ProgressiveUserSearch = () => {
             </div>
             {isLoading && (
                 <div className="absolute w-full mt-1 bg-white border border-[#ebeef5] rounded-md shadow-lg">
-                    <div className="px-4 py-2 text-[#122a48]">Chargement...</div>
+                    <Load />
                 </div>
             )}
             {results.length > 0 && (

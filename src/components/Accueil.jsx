@@ -10,6 +10,7 @@ import { useToken } from "../context/TokenContext";
 import { useActor } from "../context/ActorContext";
 import SwingProduit from "./Produits/SwingProduit";
 import RepostComponent from './Post/RepostComponent';
+import SewingRepost from "./Post/SewingRepost";
 
 const SewingNetwork = () => {
     const { getToken } = useToken();
@@ -89,7 +90,7 @@ const SewingNetwork = () => {
                             ) : item.type === 'produit' ? (
                                 <SwingProduit produit={item} />
                             ) : item.type === 'repost' ? (
-                                <RepostComponent repost={item} />
+                                <SewingRepost repost={item} />
                             ) : null
                         ))
                     )}

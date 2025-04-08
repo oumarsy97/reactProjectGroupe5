@@ -5,6 +5,7 @@ import Navbar from "./UserProfile/Navbar";
 import useCrud from "../hooks/useCrudAxios";
 import { getTimeDifference } from "../utils/tokenUtils";
 import { motion } from "framer-motion";
+import Load from "./chat/Load";
 
 const UserDetail = () => {
     const { id } = useParams();
@@ -24,7 +25,7 @@ const UserDetail = () => {
         fetchUser();
     }, [id, getProfile]);
 
-    if (!user) return <div className="flex justify-center items-center h-screen font-sans text-[#003366]">Chargement...</div>;
+    if (!user) return <Load />
 
     return (
         <div className="bg-white min-h-screen mt-4 font-sans">

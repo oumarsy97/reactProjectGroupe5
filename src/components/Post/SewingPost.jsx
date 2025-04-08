@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Heart, Share2, Bookmark, UserPlus, UserCheck, MessageCircle } from 'lucide-react';
+import { Heart, Share2, Bookmark, MessageCircle } from 'lucide-react';
 import { getTimeDifference } from "../../utils/tokenUtils";
 import useCrud from "../../hooks/useCrudAxios";
 import { useAuth } from "../../context/AuthContext";
@@ -7,6 +7,7 @@ import AlertService from "../../services/notifications/AlertService";
 import Comments from './PostCommentpopup';
 import RepostComponent from "./RepostComponent";
 import StarRating from "./Note";
+import FollowButton from "../FollowButton";
 
 const PostSwing = ({ post }) => {
     const {
@@ -21,19 +22,16 @@ const PostSwing = ({ post }) => {
     } = post;
     const { user: currentUser } = useAuth();
 
-
     const [likes, setLikes] = useState(post.likes);
     const videoRef = useRef(null);
     const [isLiked, setIsLiked] = useState(likes.some(like => like.idUser === currentUser.id));
     const [likeCount, setLikeCount] = useState(likes.length);
     const { create: createLike } = useCrud(`posts/like/${id}`);
-    const { create: toggleFollow } = useCrud(`follows/follow/${user.id}`);
     const [showComments, setShowComments] = useState(false);
     const [comments, setComments] = useState([]);
     const { create: createComment } = useCrud(`posts/comment/${id}`);
     const crudComment = useCrud(`posts/comment/${id}`);
 
-    const [isFollowing, setIsFollowing] = useState(currentUser.follow.some(fol => fol.idActor === id));
     const [isFavorited, setIsFavorited] = useState(post.favoris ? post.favoris.some(fav => fav.idUser === currentUser.id) : false);
     const { create: createFavorite } = useCrud(`posts/favoris/${id}`);
 
@@ -62,10 +60,6 @@ const PostSwing = ({ post }) => {
             fetchComments();
         }
     }, [showComments]);
-
-    useEffect(() => {
-        setIsFollowing(currentUser.follow.some(fol => fol.idActor === id));
-    }, [currentUser, isFollowing, id]);
 
     const isVideo = (url) => {
         return url.includes('/video/upload/');
@@ -97,19 +91,6 @@ const PostSwing = ({ post }) => {
             console.error("Erreur lors de la mise à jour des favoris:", error);
             setIsFavorited(!newIsFavorited);
             AlertService.error("Une erreur est survenue. Veuillez réessayer.");
-        }
-    };
-
-    const handleFollowClick = async () => {
-        const newIsFollowing = !isFollowing;
-        setIsFollowing(newIsFollowing);
-        try {
-            await toggleFollow([], true);
-            AlertService.success(newIsFollowing ? "Vous suivez maintenant cet utilisateur" : "Vous ne suivez plus cet utilisateur");
-        } catch (error) {
-            console.error("Error toggling follow status:", error);
-            setIsFollowing(!newIsFollowing);
-            await AlertService.error("Une erreur est survenue. Veuillez réessayer.");
         }
     };
 
@@ -153,26 +134,11 @@ const PostSwing = ({ post }) => {
                             <p className="text-gray-500 text-sm">{getTimeDifference(createdAt)}</p>
                         </div>
                     </div>
-                    <button
-                        onClick={handleFollowClick}
-                        className={`flex items-center px-4 py-1 text-white text-sm font-medium rounded-full ${
-                            isFollowing
-                                ? 'bg-gray-500 hover:bg-gray-600'
-                                : 'bg-gradient-to-br from-black to-purple-900 hover:opacity-90'
-                        } transition-all duration-200`}
-                    >
-                        {isFollowing ? (
-                            <>
-                                <UserCheck className="h-5 w-5 mr-1" />
-                                <span>Suivi</span>
-                            </>
-                        ) : (
-                            <>
-                                <UserPlus className="h-5 w-5 mr-1" />
-                                <span>Suivre</span>
-                            </>
-                        )}
-                    </button>
+                    {post.user.user.id !== currentUser.id && (<FollowButton
+                        userId={user.id}
+                        initialIsFollowing={currentUser.follow.some(fol => fol.idActor === id)}
+                        currentUser={currentUser}
+                    />)}
                 </div>
                 <StarRating  idPost={id} idUser={currentUser.id}/>
                 <p className="font-bold mt-2">{title}</p>
@@ -246,7 +212,6 @@ const PostSwing = ({ post }) => {
                 />
             )}
         </div>
-
     );
 };
 
